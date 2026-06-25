@@ -1,0 +1,90 @@
+"use client";
+
+import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  branch: string;
+  year: number;
+  telegram_username: string;
+  subjects: string[];
+  created_at: string;
+}
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  branch: string;
+  year: number;
+  telegram_username: string;
+  subjects?: string[];
+}
+
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("campusflow_token");
+    if (token) {
+      api
+        .get<{ student: User }>("/api/auth/me", { token })
+        .then((res) => setUser(res.student))
+        .catch(() => localStorage.removeItem("campusflow_token"))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const res = await api.post<{ token: string; student: User }>("/api/auth/login", {
+        email,
+        password,
+      });
+      localStorage.setItem("campusflow_token", res.token);
+      setUser(res.student);
+      router.push("/dashboard");
+    },
+    [router]
+  );
+
+  const register = useCallback(
+    async (payload: RegisterPayload) => {
+      const res = await api.post<{ token: string; student: User }>("/api/auth/register", payload);
+      localStorage.setItem("campusflow_token", res.token);
+      setUser(res.student);
+      router.push("/dashboard");
+    },
+    [router]
+  );
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("campusflow_token");
+    setUser(null);
+    router.push("/login");
+  }, [router]);
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
