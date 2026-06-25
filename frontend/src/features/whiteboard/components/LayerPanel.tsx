@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff, Lock, Unlock, Trash2, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import { Layer } from '../hooks/useCanvasEngine';
+import { memo } from 'react';
 
 interface LayerPanelProps {
   layers: Layer[];
@@ -14,7 +15,7 @@ interface LayerPanelProps {
   onReorderLayers: (layers: Layer[]) => void;
 }
 
-export function LayerPanel({
+export const LayerPanel = memo(function LayerPanel({
   layers,
   activeLayerId,
   onSelectLayer,
@@ -41,7 +42,7 @@ export function LayerPanel({
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h3 className="font-semibold text-sm">Layers</h3>
         <button
-          onClick={onAddLayer}
+          onClick={() => onAddLayer()}
           className="p-1 hover:bg-muted rounded-[6px] transition-colors cursor-pointer text-primary"
           title="Add Layer"
         >
@@ -113,4 +114,4 @@ export function LayerPanel({
       </div>
     </div>
   );
-}
+});

@@ -157,7 +157,8 @@ export function useCanvasEngine() {
   // Layers management
   const addLayer = useCallback((name?: string) => {
     const id = genId();
-    setLayers(prev => [...prev, { id, name: name || `Layer ${prev.length + 1}`, visible: true, locked: false }]);
+    const layerName = (typeof name === 'string' && name.trim()) ? name.trim() : `Layer ${layersRef.current.length + 1}`;
+    setLayers(prev => [...prev, { id, name: layerName, visible: true, locked: false }]);
     setActiveLayerId(id);
   }, []);
 
@@ -190,6 +191,19 @@ export function useCanvasEngine() {
 
   const reorderLayers = useCallback((newLayers: Layer[]) => {
     setLayers(newLayers);
+  }, []);
+
+  const setLayersSanitized = useCallback((val: Layer[] | ((prev: Layer[]) => Layer[])) => {
+    setLayers(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      if (!Array.isArray(next)) return prev;
+      return next.map((l, idx) => ({
+        id: l.id || genId(),
+        name: (l && l.name && typeof l.name === 'string') ? l.name : `Layer ${idx + 1}`,
+        visible: typeof l.visible === 'boolean' ? l.visible : true,
+        locked: typeof l.locked === 'boolean' ? l.locked : false,
+      }));
+    });
   }, []);
 
   // Text inline editing completion
@@ -707,7 +721,7 @@ export function useCanvasEngine() {
     // Multi-Selection and Grouping
     groupSelected, ungroupSelected,
     // Layers
-    layers, setLayers, activeLayerId, setActiveLayerId, addLayer, removeLayer,
+    layers, setLayers: setLayersSanitized, activeLayerId, setActiveLayerId, addLayer, removeLayer,
     toggleLayerVisibility, toggleLayerLock, reorderLayers,
     // Inline text editing
     editingId, setEditingId, editingText, setEditingText, finishTextEditing,

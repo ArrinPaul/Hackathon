@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Bot, Sparkles, Code, Loader2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Shape, createShape, genId } from '../lib/shapes';
@@ -16,7 +16,7 @@ interface AiPanelProps {
 
 type TabId = 'text-to-diagram' | 'canvas-to-code';
 
-export function AiPanel({ isOpen, onToggle, shapes, onAddShapes }: AiPanelProps) {
+export const AiPanel = memo(function AiPanel({ isOpen, onToggle, shapes, onAddShapes }: AiPanelProps) {
   const [activeTab, setActiveTab] = useState<TabId>('text-to-diagram');
   const [prompt, setPrompt] = useState('');
   const [output, setOutput] = useState('');
@@ -217,4 +217,4 @@ export function AiPanel({ isOpen, onToggle, shapes, onAddShapes }: AiPanelProps)
       </div>
     </div>
   );
-}
+});
