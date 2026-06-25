@@ -90,7 +90,7 @@ describe('createShape', () => {
   });
 
   it('creates each shape type without errors', () => {
-    const types: ShapeType[] = ['rect', 'rrect', 'ellipse', 'diamond', 'text', 'sticky', 'arrow', 'line'];
+    const types: ShapeType[] = ['rect', 'rrect', 'ellipse', 'diamond', 'text', 'sticky', 'arrow', 'line', 'pen', 'image'];
     for (const type of types) {
       const shape = createShape(type);
       expect(shape.type).toBe(type);
@@ -100,13 +100,13 @@ describe('createShape', () => {
 });
 
 describe('TOOL_LIST', () => {
-  it('has 8 tools', () => {
-    expect(TOOL_LIST.length).toBe(8);
+  it('has 10 tools', () => {
+    expect(TOOL_LIST.length).toBe(10);
   });
 
   it('has correct tool ids', () => {
     const ids = TOOL_LIST.map(t => t.id);
-    expect(ids).toEqual(['select', 'rect', 'rrect', 'ellipse', 'diamond', 'text', 'arrow', 'sticky']);
+    expect(ids).toEqual(['select', 'pen', 'rect', 'rrect', 'ellipse', 'diamond', 'text', 'arrow', 'sticky', 'image']);
   });
 
   it('select tool has key V', () => {

@@ -1,33 +1,74 @@
 'use client';
 
 import { useCanvasEngine } from '../hooks/useCanvasEngine';
+import { useAutoSave } from '../hooks/useAutoSave';
 import { WhiteboardToolbar } from './WhiteboardToolbar';
 import { AiPanel } from './AiPanel';
-import { useState, useCallback } from 'react';
+import { LayerPanel } from './LayerPanel';
+import { ShortcutsPanel } from './ShortcutsPanel';
+import { Minimap } from './Minimap';
+import { useState, useCallback, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { Layers, ArrowLeft, Cloud, CloudRain, RefreshCw } from 'lucide-react';
+import { worldToScreenShape } from '../lib/canvas-utils';
 
-export function WhiteboardCanvas() {
+interface WhiteboardCanvasProps {
+  whiteboardId: string | null;
+  title: string;
+  onBack?: () => void;
+}
+
+export function WhiteboardCanvas({ whiteboardId, title, onBack }: WhiteboardCanvasProps) {
   const engine = useCanvasEngine();
   const [aiOpen, setAiOpen] = useState(false);
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // Load saved whiteboard data on mount / change
+  useEffect(() => {
+    if (!whiteboardId) return;
+    const loadBoard = async () => {
+      try {
+        const res = await api.get<{ whiteboard: any }>(`/api/whiteboards/${whiteboardId}`);
+        const boardData = res.whiteboard.data || {};
+        if (boardData.shapes) engine.setShapes(boardData.shapes);
+        if (boardData.viewport) engine.setViewport(boardData.viewport);
+        if (boardData.layers) engine.setLayers(boardData.layers);
+      } catch (err) {
+        console.error('Failed to load whiteboard:', err);
+      }
+    };
+    loadBoard();
+  }, [whiteboardId]);
+
+  // Debounced auto-save (3 seconds delay)
+  const saveStatus = useAutoSave(
+    whiteboardId,
+    engine.shapes,
+    engine.viewport,
+    engine.layers,
+    title
+  );
 
   const handleExportPng = useCallback(() => {
     const canvas = engine.canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = 'whiteboard.png';
+    link.download = `${title.toLowerCase().replace(/\s+/g, '_') || 'whiteboard'}.png`;
     link.href = canvas.toDataURL();
     link.click();
-  }, [engine.canvasRef]);
+  }, [engine.canvasRef, title]);
 
   const handleExportJson = useCallback(() => {
-    const data = JSON.stringify({ shapes: engine.shapes, viewport: engine.viewport }, null, 2);
+    const data = JSON.stringify({ shapes: engine.shapes, viewport: engine.viewport, layers: engine.layers }, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = 'whiteboard.json';
+    link.download = `${title.toLowerCase().replace(/\s+/g, '_') || 'whiteboard'}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-  }, [engine.shapes, engine.viewport]);
+  }, [engine.shapes, engine.viewport, engine.layers, title]);
 
   const handleImportJson = useCallback(() => {
     const input = document.createElement('input');
@@ -41,9 +82,8 @@ export function WhiteboardCanvas() {
         try {
           const data = JSON.parse(ev.target?.result as string);
           if (data.shapes) engine.setShapes(data.shapes);
-          if (data.viewport) {
-            engine.setViewport?.(data.viewport);
-          }
+          if (data.viewport) engine.setViewport(data.viewport);
+          if (data.layers) engine.setLayers(data.layers);
         } catch {
           alert('Invalid JSON file');
         }
@@ -51,10 +91,56 @@ export function WhiteboardCanvas() {
       reader.readAsText(file);
     };
     input.click();
-  }, [engine.setShapes]);
+  }, [engine.setShapes, engine.setViewport, engine.setLayers]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
+    <div className="flex flex-col h-[calc(100vh-120px)] border border-border rounded-[10px] overflow-hidden bg-white shadow-sm relative">
+      {/* Top Header bar with Back button, Title and Save status */}
+      <div className="bg-muted/30 border-b border-border px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="p-1.5 hover:bg-muted rounded-[8px] transition-colors cursor-pointer text-muted-foreground hover:text-foreground"
+              title="Back to List"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+          <span className="font-semibold text-sm text-foreground">{title}</span>
+          
+          {/* Cloud Auto-save indicator */}
+          {whiteboardId && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground ml-4 bg-muted px-2 py-0.5 rounded-full font-medium">
+              {saveStatus === 'saving' && (
+                <>
+                  <RefreshCw className="w-3 h-3 animate-spin text-primary" />
+                  <span>Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <Cloud className="w-3 h-3 text-green-500" />
+                  <span className="text-green-600">Saved to Cloud</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <>
+                  <CloudRain className="w-3 h-3 text-red-500" />
+                  <span className="text-red-500">Save Error</span>
+                </>
+              )}
+              {saveStatus === 'idle' && (
+                <>
+                  <Cloud className="w-3 h-3 text-muted-foreground" />
+                  <span>Synced</span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
       <WhiteboardToolbar
         tool={engine.tool}
         onSetTool={engine.setTool}
@@ -72,9 +158,12 @@ export function WhiteboardCanvas() {
         onExportPng={handleExportPng}
         onExportJson={handleExportJson}
         onImportJson={handleImportJson}
+        onGroupSelected={engine.groupSelected}
+        onUngroupSelected={engine.ungroupSelected}
+        onToggleShortcuts={() => setShortcutsOpen(true)}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative overflow-hidden">
           <canvas
             ref={engine.canvasRef}
@@ -87,12 +176,84 @@ export function WhiteboardCanvas() {
             onDoubleClick={engine.onDoubleClick}
             onContextMenu={e => e.preventDefault()}
           />
-          <div className="absolute bottom-2 left-2 flex gap-3 text-[10px] text-muted-foreground bg-white/80 px-2 py-1 rounded pointer-events-none">
-            <span>{engine.tool}</span>
+
+          {/* Minimap Overlay component */}
+          <Minimap
+            shapes={engine.shapes}
+            viewport={engine.viewport}
+            onSetViewport={engine.setViewport}
+            parentCanvas={engine.canvasRef.current}
+          />
+
+          {/* Status info bar */}
+          <div className="absolute bottom-2 left-2 flex gap-3 text-[10px] text-muted-foreground bg-white/80 px-2 py-1 rounded border border-border/50 pointer-events-none font-medium">
+            <span>{engine.tool.toUpperCase()}</span>
             <span>{engine.cursorPos.x}, {engine.cursorPos.y}</span>
             <span>{engine.zoomPercent}%</span>
           </div>
+
+          {/* Absolute positioned Layers toggle button */}
+          <button
+            onClick={() => setLayersOpen(!layersOpen)}
+            className={`absolute bottom-2 right-2 z-20 p-2 rounded-full border shadow-sm transition-all cursor-pointer ${
+              layersOpen
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-white text-muted-foreground border-border hover:text-foreground'
+            }`}
+            title="Toggle Layers"
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+
+          {/* Absolute positioned inline editing textarea */}
+          {engine.editingId && (
+            (() => {
+              const editingShape = engine.shapes.find(s => s.id === engine.editingId);
+              if (!editingShape) return null;
+              const s = worldToScreenShape(editingShape, engine.viewport);
+              return (
+                <textarea
+                  value={engine.editingText}
+                  onChange={e => engine.setEditingText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      engine.finishTextEditing(true);
+                    } else if (e.key === 'Escape') {
+                      engine.finishTextEditing(false);
+                    }
+                  }}
+                  onBlur={() => engine.finishTextEditing(true)}
+                  className="absolute z-40 bg-white border-2 border-primary rounded p-1 text-center font-sans resize-none focus:outline-none focus:ring-1 focus:ring-primary shadow-lg"
+                  style={{
+                    left: `${s.x}px`,
+                    top: `${s.y}px`,
+                    width: `${s.w}px`,
+                    height: `${s.h}px`,
+                    fontSize: `${editingShape.fontSize * engine.viewport.zoom}px`,
+                    lineHeight: 1.3,
+                    fontFamily: editingShape.fontFamily || 'Arial',
+                  }}
+                  autoFocus
+                />
+              );
+            })()
+          )}
         </div>
+
+        {/* Sidebar layers management panel */}
+        {layersOpen && (
+          <LayerPanel
+            layers={engine.layers}
+            activeLayerId={engine.activeLayerId}
+            onSelectLayer={engine.setActiveLayerId}
+            onAddLayer={engine.addLayer}
+            onRemoveLayer={engine.removeLayer}
+            onToggleVisibility={engine.toggleLayerVisibility}
+            onToggleLock={engine.toggleLayerLock}
+            onReorderLayers={engine.reorderLayers}
+          />
+        )}
 
         <AiPanel
           isOpen={aiOpen}
@@ -101,6 +262,9 @@ export function WhiteboardCanvas() {
           onAddShapes={engine.addShapes}
         />
       </div>
+
+      {/* Shortcuts overlay panel */}
+      <ShortcutsPanel isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );
 }

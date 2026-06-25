@@ -3,7 +3,8 @@
 import {
   MousePointer2, Square, RectangleHorizontal, Circle, Diamond,
   Type, ArrowRight, StickyNote, Undo2, Redo2, Trash2,
-  Download, Upload, Save, Minus,
+  Download, Upload, Save, Minus, Pen, Image as ImageIcon,
+  Group, Ungroup, HelpCircle,
 } from 'lucide-react';
 import { ToolId, TOOL_LIST, COLORS } from '../lib/shapes';
 
@@ -24,10 +25,14 @@ interface ToolbarProps {
   onExportPng: () => void;
   onExportJson: () => void;
   onImportJson: () => void;
+  onGroupSelected: () => void;
+  onUngroupSelected: () => void;
+  onToggleShortcuts: () => void;
 }
 
 const TOOL_ICONS: Record<string, React.ReactNode> = {
   select: <MousePointer2 className="w-4 h-4" />,
+  pen: <Pen className="w-4 h-4" />,
   rect: <Square className="w-4 h-4" />,
   rrect: <RectangleHorizontal className="w-4 h-4" />,
   ellipse: <Circle className="w-4 h-4" />,
@@ -35,12 +40,14 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   text: <Type className="w-4 h-4" />,
   arrow: <ArrowRight className="w-4 h-4" />,
   sticky: <StickyNote className="w-4 h-4" />,
+  image: <ImageIcon className="w-4 h-4" />,
 };
 
 export function WhiteboardToolbar({
   tool, onSetTool, fillColor, onSetFillColor, strokeColor, onSetStrokeColor,
   strokeWidth, onSetStrokeWidth, fontSize, onSetFontSize,
   onUndo, onRedo, onClear, onExportPng, onExportJson, onImportJson,
+  onGroupSelected, onUngroupSelected, onToggleShortcuts,
 }: ToolbarProps) {
   return (
     <div className="flex items-center gap-1 px-3 py-2 bg-white border-b border-border flex-wrap">
@@ -145,6 +152,17 @@ export function WhiteboardToolbar({
       <div className="w-px h-6 bg-border mx-2" />
 
       <div className="flex items-center gap-1">
+        <button onClick={onGroupSelected} title="Group shapes (Ctrl+G)" className="p-2 rounded-[6px] text-muted-foreground hover:bg-muted cursor-pointer">
+          <Group className="w-4 h-4" />
+        </button>
+        <button onClick={onUngroupSelected} title="Ungroup shapes (Ctrl+Shift+G)" className="p-2 rounded-[6px] text-muted-foreground hover:bg-muted cursor-pointer">
+          <Ungroup className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="w-px h-6 bg-border mx-2" />
+
+      <div className="flex items-center gap-1">
         <button onClick={onExportPng} title="Export PNG" className="p-2 rounded-[6px] text-muted-foreground hover:bg-muted cursor-pointer">
           <Download className="w-4 h-4" />
         </button>
@@ -153,6 +171,14 @@ export function WhiteboardToolbar({
         </button>
         <button onClick={onImportJson} title="Load JSON" className="p-2 rounded-[6px] text-muted-foreground hover:bg-muted cursor-pointer">
           <Upload className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="w-px h-6 bg-border mx-2" />
+
+      <div className="flex items-center gap-1">
+        <button onClick={onToggleShortcuts} title="Keyboard Shortcuts" className="p-2 rounded-[6px] text-muted-foreground hover:bg-muted cursor-pointer">
+          <HelpCircle className="w-4 h-4" />
         </button>
       </div>
     </div>

@@ -10,6 +10,7 @@ const attendanceRoutes = require("./routes/attendance");
 const aiRoutes = require("./routes/ai");
 const automationRoutes = require("./routes/automations");
 const googleRoutes = require("./routes/google");
+const whiteboardRoutes = require("./routes/whiteboards");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,6 +25,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/automations", automationRoutes);
 app.use("/api/auth/google", googleRoutes);
+app.use("/api/whiteboards", whiteboardRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

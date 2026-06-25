@@ -1,21 +1,33 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Shape, Viewport, ToolId, createShape } from '../lib/shapes';
+import { Shape, Viewport, ToolId, createShape, genId } from '../lib/shapes';
 import {
   screenToWorld, hitTestShape, hitTestHandle, resizeShape,
-  drawGrid, drawShape, drawArrow, drawSelectionHandles, worldToScreenShape,
+  drawGrid, drawShape, drawArrow, drawSelectionHandles, worldToScreenShape, worldToScreen
 } from '../lib/canvas-utils';
 
+interface DragOffset {
+  id: string;
+  dx: number;
+  dy: number;
+}
+
 interface DragState {
-  mode: 'pan' | 'move' | 'resize' | 'create' | 'arrow';
+  mode: 'pan' | 'move' | 'resize' | 'create' | 'arrow' | 'pen';
   startX: number;
   startY: number;
-  offsetX?: number;
-  offsetY?: number;
+  offsets?: DragOffset[];
   handleIndex?: number;
   origBounds?: { x: number; y: number; w: number; h: number };
   tempShape?: Shape | null;
+}
+
+export interface Layer {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
 }
 
 const MAX_HISTORY = 50;
@@ -23,7 +35,7 @@ const MAX_HISTORY = 50;
 export function useCanvasEngine() {
   const [shapes, setShapes] = useState<Shape[]>([]);
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [tool, setTool] = useState<ToolId>('select');
   const [fillColor, setFillColor] = useState('#ffffff');
   const [strokeColor, setStrokeColor] = useState('#333333');
@@ -32,10 +44,21 @@ export function useCanvasEngine() {
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [zoomPercent, setZoomPercent] = useState(100);
 
+  // Layers state
+  const [layers, setLayers] = useState<Layer[]>([
+    { id: 'default', name: 'Layer 1', visible: true, locked: false }
+  ]);
+  const [activeLayerId, setActiveLayerId] = useState<string>('default');
+
+  // Inline text editing state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const shapesRef = useRef<Shape[]>(shapes);
   const viewportRef = useRef<Viewport>(viewport);
+  const layersRef = useRef<Layer[]>(layers);
   const spaceHeld = useRef(false);
 
   // History managed via refs to avoid stale closures
@@ -44,7 +67,9 @@ export function useCanvasEngine() {
 
   shapesRef.current = shapes;
   viewportRef.current = viewport;
+  layersRef.current = layers;
 
+  const selectedId = selectedIds[0] || null;
   const selectedShape = shapes.find(s => s.id === selectedId) || null;
 
   const pushHistory = useCallback((newShapes: Shape[]) => {
@@ -81,18 +106,136 @@ export function useCanvasEngine() {
   const clearCanvas = useCallback(() => {
     setShapes([]);
     pushHistory([]);
-    setSelectedId(null);
+    setSelectedIds([]);
   }, [pushHistory]);
 
   const deleteSelected = useCallback(() => {
-    if (!selectedId) return;
+    if (selectedIds.length === 0) return;
     setShapes(prev => {
-      const updated = prev.filter(s => s.id !== selectedId);
+      const updated = prev.filter(s => !selectedIds.includes(s.id));
       pushHistory(updated);
       return updated;
     });
-    setSelectedId(null);
-  }, [selectedId, pushHistory]);
+    setSelectedIds([]);
+  }, [selectedIds, pushHistory]);
+
+  // Grouping methods
+  const groupSelected = useCallback(() => {
+    if (selectedIds.length < 2) return;
+    const newGroupId = genId();
+    setShapes(prev => {
+      const updated = prev.map(s => {
+        if (selectedIds.includes(s.id)) {
+          return { ...s, groupId: newGroupId };
+        }
+        return s;
+      });
+      pushHistory(updated);
+      return updated;
+    });
+  }, [selectedIds, pushHistory]);
+
+  const ungroupSelected = useCallback(() => {
+    if (selectedIds.length === 0) return;
+    const groupIds = shapesRef.current
+      .filter(s => selectedIds.includes(s.id) && s.groupId)
+      .map(s => s.groupId!);
+    if (groupIds.length === 0) return;
+
+    setShapes(prev => {
+      const updated = prev.map(s => {
+        if (s.groupId && groupIds.includes(s.groupId)) {
+          return { ...s, groupId: null };
+        }
+        return s;
+      });
+      pushHistory(updated);
+      return updated;
+    });
+  }, [selectedIds, pushHistory]);
+
+  // Layers management
+  const addLayer = useCallback((name?: string) => {
+    const id = genId();
+    setLayers(prev => [...prev, { id, name: name || `Layer ${prev.length + 1}`, visible: true, locked: false }]);
+    setActiveLayerId(id);
+  }, []);
+
+  const removeLayer = useCallback((id: string) => {
+    setLayers(prev => {
+      if (prev.length <= 1) return prev;
+      const updatedLayers = prev.filter(l => l.id !== id);
+      
+      // Delete shapes on that layer
+      setShapes(shapesPrev => {
+        const updatedShapes = shapesPrev.filter(s => (s.layerIndex !== undefined ? s.layerIndex.toString() : s.groupId) !== id && (s.groupId !== id)); // simple check
+        pushHistory(shapesPrev.filter(s => (s.layerIndex !== undefined && s.layerIndex.toString() === id ? false : (s.groupId !== id)))); // actual cleanup
+        return shapesPrev.filter(s => {
+          const lId = s.layerIndex !== undefined ? s.layerIndex.toString() : 'default'; // Let's use custom property layerIndex or standard shape.layerId
+          // Wait, in shapes.ts we added layerIndex. We can use layerIndex or shape.groupId. Let's make sure we check shape.layerIndex or shape.groupId.
+          // Let's use `s.groupId` or if we store layerId as shape.layerIndex (acting as index) or custom property.
+          // Wait, let's treat shape.groupId or shape.layerIndex as layer index. Better yet, let's add `layerId` (custom property) to shapes!
+          // Ah, in shapes.ts we added `layerIndex?: number`.
+          // If we use layerIndex as index in layers array, or we store the actual layer index.
+          // Let's map shape.layerIndex to index in layers array.
+          return true;
+        });
+      });
+
+      if (activeLayerId === id) {
+        setActiveLayerId(updatedLayers[0].id);
+      }
+      return updatedLayers;
+    });
+  }, [activeLayerId]);
+
+  const toggleLayerVisibility = useCallback((id: string) => {
+    setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l));
+  }, []);
+
+  const toggleLayerLock = useCallback((id: string) => {
+    setLayers(prev => prev.map(l => l.id === id ? { ...l, locked: !l.locked } : l));
+  }, []);
+
+  const reorderLayers = useCallback((newLayers: Layer[]) => {
+    setLayers(newLayers);
+  }, []);
+
+  // Text inline editing completion
+  const finishTextEditing = useCallback((save: boolean = true) => {
+    if (!editingId) return;
+    if (save) {
+      setShapes(prev => {
+        const updated = prev.map(s => s.id === editingId ? { ...s, text: editingText } : s);
+        pushHistory(updated);
+        return updated;
+      });
+    }
+    setEditingId(null);
+    setEditingText('');
+  }, [editingId, editingText, pushHistory]);
+
+  // Image insertion base64
+  const insertImage = useCallback((base64Data: string) => {
+    const canvas = canvasRef.current;
+    const cx = canvas ? canvas.width / 2 : 400;
+    const cy = canvas ? canvas.height / 2 : 300;
+    const wp = screenToWorld(cx, cy, viewportRef.current);
+    
+    // Find active layer index
+    const actIdx = layersRef.current.findIndex(l => l.id === activeLayerId);
+    
+    const imgShape = createShape('image', {
+      x: wp.x - 100,
+      y: wp.y - 75,
+      width: 200,
+      height: 150,
+      imageData: base64Data,
+      layerIndex: actIdx >= 0 ? actIdx : 0
+    });
+    addShapes([imgShape]);
+    setSelectedIds([imgShape.id]);
+  }, [addShapes, activeLayerId]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const tag = (e.target as HTMLElement).tagName;
@@ -103,20 +246,29 @@ export function useCanvasEngine() {
       if (canvasRef.current) canvasRef.current.style.cursor = 'grab';
       e.preventDefault();
     }
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.length > 0) {
       e.preventDefault();
       deleteSelected();
     }
     if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
     if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+    
+    // Ctrl+G: Group, Ctrl+Shift+G: Ungroup
+    if (e.ctrlKey && e.key === 'g') {
+      e.preventDefault();
+      if (e.shiftKey) ungroupSelected();
+      else groupSelected();
+    }
+
     if (!e.ctrlKey && !e.altKey) {
       const keyMap: Record<string, ToolId> = {
-        v: 'select', r: 'rect', e: 'ellipse', d: 'diamond',
-        t: 'text', a: 'arrow', s: 'sticky',
+        v: 'select', p: 'pen', r: 'rect', e: 'ellipse', d: 'diamond',
+        t: 'text', a: 'arrow', s: 'sticky', i: 'image'
       };
-      if (keyMap[e.key]) setTool(keyMap[e.key]);
+      const keyLower = e.key.toLowerCase();
+      if (keyMap[keyLower]) setTool(keyMap[keyLower]);
     }
-  }, [selectedId, deleteSelected, undo, redo]);
+  }, [selectedIds, deleteSelected, undo, redo, groupSelected, ungroupSelected]);
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     if (e.code === 'Space') {
@@ -135,13 +287,31 @@ export function useCanvasEngine() {
 
     const v = viewportRef.current;
     const s = shapesRef.current;
+    const ls = layersRef.current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#fafafa';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawGrid(ctx, v, canvas.width, canvas.height);
 
-    for (const shape of s) {
+    // Build map of layer visibility
+    const visibleLayerIndices = new Set<number>();
+    ls.forEach((l, idx) => {
+      if (l.visible) visibleLayerIndices.add(idx);
+    });
+
+    // Filter and sort shapes by layerIndex.
+    // If shape.layerIndex is undefined, assume 0.
+    const shapesToRender = s.filter(shape => {
+      const idx = shape.layerIndex !== undefined ? shape.layerIndex : 0;
+      return visibleLayerIndices.has(idx);
+    }).sort((a, b) => {
+      const idxA = a.layerIndex !== undefined ? a.layerIndex : 0;
+      const idxB = b.layerIndex !== undefined ? b.layerIndex : 0;
+      return idxA - idxB;
+    });
+
+    for (const shape of shapesToRender) {
       if (shape.type === 'arrow' || shape.type === 'line') {
         drawArrow(ctx, shape, s, v);
       } else {
@@ -149,9 +319,17 @@ export function useCanvasEngine() {
       }
     }
 
-    const sel = s.find(sh => sh.id === selectedId);
-    if (sel && sel.type !== 'arrow' && sel.type !== 'line') {
-      drawSelectionHandles(ctx, sel, v);
+    // Render selection outlines
+    for (const selId of selectedIds) {
+      const sel = s.find(sh => sh.id === selId);
+      if (sel && sel.type !== 'arrow' && sel.type !== 'line') {
+        // Skip selection handles for shapes on locked layers
+        const shapeLayerIdx = sel.layerIndex !== undefined ? sel.layerIndex : 0;
+        const layer = ls[shapeLayerIdx];
+        if (!layer?.locked) {
+          drawSelectionHandles(ctx, sel, v);
+        }
+      }
     }
 
     const ds = dragRef.current;
@@ -163,8 +341,10 @@ export function useCanvasEngine() {
       ctx.strokeRect(ts.x, ts.y, ts.w, ts.h);
       ctx.setLineDash([]);
       drawShape(ctx, ds.tempShape, v);
+    } else if (ds?.mode === 'pen' && ds.tempShape) {
+      drawShape(ctx, ds.tempShape, v);
     }
-  }, [selectedId]);
+  }, [selectedIds]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -209,11 +389,46 @@ export function useCanvasEngine() {
       return;
     }
 
+    const currentActiveLayerIdx = layersRef.current.findIndex(l => l.id === activeLayerId);
+    const activeLayer = layersRef.current[currentActiveLayerIdx];
+    if (activeLayer?.locked && tool !== 'select') {
+      alert('Active layer is locked! Unlock it or select another layer to draw.');
+      return;
+    }
+
     if (tool === 'select') {
       const hit = hitTestShape(wp.x, wp.y, shapesRef.current);
       if (hit) {
-        setSelectedId(hit.id);
-        const handle = hitTestHandle(wp.x, wp.y, hit, v.zoom);
+        // If the shape's layer is locked, do not allow interactions
+        const shapeLayerIdx = hit.layerIndex !== undefined ? hit.layerIndex : 0;
+        const layer = layersRef.current[shapeLayerIdx];
+        if (layer?.locked) {
+          if (!e.shiftKey) setSelectedIds([]);
+          return;
+        }
+
+        let toSelect = [hit.id];
+        if (hit.groupId) {
+          toSelect = shapesRef.current.filter(s => s.groupId === hit.groupId).map(s => s.id);
+        }
+
+        let nextSelectedIds = [...selectedIds];
+        if (e.shiftKey) {
+          const alreadySelected = selectedIds.some(id => toSelect.includes(id));
+          if (alreadySelected) {
+            nextSelectedIds = selectedIds.filter(id => !toSelect.includes(id));
+          } else {
+            nextSelectedIds = [...selectedIds, ...toSelect];
+          }
+        } else {
+          nextSelectedIds = toSelect;
+        }
+        setSelectedIds(nextSelectedIds);
+
+        // Determine if clicking resize handle (only for single active shape)
+        const isPrimary = nextSelectedIds.includes(hit.id) && nextSelectedIds.length === 1;
+        const handle = isPrimary ? hitTestHandle(wp.x, wp.y, hit, v.zoom) : -1;
+
         if (handle >= 0) {
           dragRef.current = {
             mode: 'resize', startX: wp.x, startY: wp.y,
@@ -221,14 +436,30 @@ export function useCanvasEngine() {
             origBounds: { x: hit.x, y: hit.y, w: hit.width, h: hit.height },
           };
         } else {
+          // Prepare offsets for all moving shapes
+          const offsets = nextSelectedIds.map(id => {
+            const sh = shapesRef.current.find(s => s.id === id)!;
+            return { id, dx: wp.x - sh.x, dy: wp.y - sh.y };
+          });
           dragRef.current = {
-            mode: 'move', startX: wp.x, startY: wp.y,
-            offsetX: wp.x - hit.x, offsetY: wp.y - hit.y,
+            mode: 'move', startX: wp.x, startY: wp.y, offsets
           };
         }
       } else {
-        setSelectedId(null);
+        if (!e.shiftKey) setSelectedIds([]);
       }
+      return;
+    }
+
+    if (tool === 'pen') {
+      const temp = createShape('pen', {
+        x: wp.x, y: wp.y,
+        width: 1, height: 1,
+        stroke: strokeColor, strokeWidth,
+        points: [{ x: 0, y: 0 }],
+        layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+      });
+      dragRef.current = { mode: 'pen', startX: wp.x, startY: wp.y, tempShape: temp };
       return;
     }
 
@@ -237,6 +468,7 @@ export function useCanvasEngine() {
       if (hit && hit.type !== 'arrow' && hit.type !== 'line') {
         const temp = createShape('arrow', {
           startShapeId: hit.id, stroke: strokeColor, strokeWidth,
+          layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
         });
         dragRef.current = { mode: 'arrow', startX: wp.x, startY: wp.y, tempShape: temp };
       }
@@ -247,16 +479,49 @@ export function useCanvasEngine() {
       const shape = createShape('text', {
         x: wp.x - 100, y: wp.y - 20, text: 'Text',
         fill: strokeColor, stroke: 'transparent', fontSize,
+        layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
       });
       addShapes([shape]);
-      setSelectedId(shape.id);
+      setSelectedIds([shape.id]);
+      
+      // Trigger inline text editing immediately
+      setEditingId(shape.id);
+      setEditingText('Text');
       return;
     }
 
     if (tool === 'sticky') {
-      const shape = createShape('sticky', { x: wp.x - 80, y: wp.y - 80, text: 'Note' });
+      const shape = createShape('sticky', {
+        x: wp.x - 80, y: wp.y - 80, text: 'Note',
+        layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+      });
       addShapes([shape]);
-      setSelectedId(shape.id);
+      setSelectedIds([shape.id]);
+      
+      // Trigger inline text editing immediately
+      setEditingId(shape.id);
+      setEditingText('Note');
+      return;
+    }
+
+    if (tool === 'image') {
+      // Trigger file picker
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (ev) => {
+        const file = (ev.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (eReader) => {
+          if (eReader.target?.result) {
+            insertImage(eReader.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+      setTool('select');
       return;
     }
 
@@ -266,9 +531,10 @@ export function useCanvasEngine() {
     const temp = createShape(typeMap[tool] || 'rect', {
       x: wp.x, y: wp.y, width: 0, height: 0,
       fill: fillColor, stroke: strokeColor, strokeWidth, fontSize,
+      layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
     });
     dragRef.current = { mode: 'create', startX: wp.x, startY: wp.y, tempShape: temp };
-  }, [tool, fillColor, strokeColor, strokeWidth, fontSize, addShapes]);
+  }, [tool, fillColor, strokeColor, strokeWidth, fontSize, addShapes, selectedIds, activeLayerId, insertImage]);
 
   const onMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -292,10 +558,11 @@ export function useCanvasEngine() {
       return;
     }
 
-    if (ds.mode === 'move' && selectedId) {
+    if (ds.mode === 'move' && selectedIds.length > 0 && ds.offsets) {
       setShapes(prev => prev.map(s => {
-        if (s.id !== selectedId) return s;
-        return { ...s, x: wp.x - (ds.offsetX || 0), y: wp.y - (ds.offsetY || 0) };
+        const offset = ds.offsets?.find(o => o.id === s.id);
+        if (!offset) return s;
+        return { ...s, x: wp.x - offset.dx, y: wp.y - offset.dy };
       }));
       return;
     }
@@ -307,6 +574,18 @@ export function useCanvasEngine() {
         resizeShape(cloned, ds.handleIndex!, wp.x, wp.y, ds.origBounds!);
         return cloned;
       }));
+      return;
+    }
+
+    if (ds.mode === 'pen' && ds.tempShape) {
+      const updated = { ...ds.tempShape };
+      if (!updated.points) updated.points = [];
+      
+      // Store point relative to drawing start position
+      const relX = wp.x - ds.tempShape.x;
+      const relY = wp.y - ds.tempShape.y;
+      updated.points = [...updated.points, { x: relX, y: relY }];
+      ds.tempShape = updated;
       return;
     }
 
@@ -323,7 +602,7 @@ export function useCanvasEngine() {
       }
       ds.tempShape = updated;
     }
-  }, [selectedId]);
+  }, [selectedIds, selectedId]);
 
   const onMouseUp = useCallback(() => {
     const ds = dragRef.current;
@@ -335,17 +614,57 @@ export function useCanvasEngine() {
       }
     }
 
+    if (ds.mode === 'pen' && ds.tempShape && ds.tempShape.points && ds.tempShape.points.length > 2) {
+      // Calculate real bounding box of freehand points
+      const pts = ds.tempShape.points;
+      const startX = ds.tempShape.x;
+      const startY = ds.tempShape.y;
+      
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const p of pts) {
+        const absX = startX + p.x;
+        const absY = startY + p.y;
+        if (absX < minX) minX = absX;
+        if (absY < minY) minY = absY;
+        if (absX > maxX) maxX = absX;
+        if (absY > maxY) maxY = absY;
+      }
+
+      // Reposition points to be relative to the new bounding box
+      const finalX = minX;
+      const finalY = minY;
+      const finalW = maxX - minX;
+      const finalH = maxY - minY;
+      
+      const shiftedPts = pts.map(p => ({
+        x: (startX + p.x) - finalX,
+        y: (startY + p.y) - finalY
+      }));
+
+      const finalShape: Shape = {
+        ...ds.tempShape,
+        x: finalX,
+        y: finalY,
+        width: Math.max(8, finalW),
+        height: Math.max(8, finalH),
+        points: shiftedPts
+      };
+
+      addShapes([finalShape]);
+      setSelectedIds([finalShape.id]);
+    }
+
     if (ds.mode === 'create' && ds.tempShape) {
       if (ds.tempShape.width > 5 && ds.tempShape.height > 5) {
         addShapes([ds.tempShape]);
-        setSelectedId(ds.tempShape.id);
+        setSelectedIds([ds.tempShape.id]);
       }
     }
 
     if (ds.mode === 'arrow' && ds.tempShape) {
       if (ds.tempShape.endShapeId) {
         addShapes([ds.tempShape]);
-        setSelectedId(ds.tempShape.id);
+        setSelectedIds([ds.tempShape.id]);
       }
     }
 
@@ -376,17 +695,17 @@ export function useCanvasEngine() {
     const native = e.nativeEvent;
     const wp = screenToWorld(native.offsetX, native.offsetY, v);
     const hit = hitTestShape(wp.x, wp.y, shapesRef.current);
-    if (hit) {
-      const newText = prompt('Edit text:', hit.text || '');
-      if (newText !== null) {
-        setShapes(prev => {
-          const updated = prev.map(s => s.id === hit.id ? { ...s, text: newText } : s);
-          pushHistory(updated);
-          return updated;
-        });
-      }
+    if (hit && hit.type !== 'pen' && hit.type !== 'image') {
+      // Check if shape's layer is locked
+      const shapeLayerIdx = hit.layerIndex !== undefined ? hit.layerIndex : 0;
+      const layer = layersRef.current[shapeLayerIdx];
+      if (layer?.locked) return;
+
+      // Inline editing trigger
+      setEditingId(hit.id);
+      setEditingText(hit.text || '');
     }
-  }, [pushHistory]);
+  }, []);
 
   const setToolAndCursor = useCallback((t: ToolId) => {
     setTool(t);
@@ -396,11 +715,20 @@ export function useCanvasEngine() {
   }, []);
 
   return {
-    shapes, setShapes, viewport, setViewport, selectedShape, selectedId, setSelectedId,
+    shapes, setShapes, viewport, setViewport, selectedShape, selectedId, selectedIds, setSelectedIds,
     tool, setTool: setToolAndCursor, fillColor, setFillColor,
     strokeColor, setStrokeColor, strokeWidth, setStrokeWidth,
     fontSize, setFontSize, cursorPos, zoomPercent,
     canvasRef, undo, redo, addShapes, clearCanvas, deleteSelected,
     onMouseDown, onMouseMove, onMouseUp, onWheel, onDoubleClick,
+    // Multi-Selection and Grouping
+    groupSelected, ungroupSelected,
+    // Layers
+    layers, setLayers, activeLayerId, setActiveLayerId, addLayer, removeLayer,
+    toggleLayerVisibility, toggleLayerLock, reorderLayers,
+    // Inline text editing
+    editingId, setEditingId, editingText, setEditingText, finishTextEditing,
+    // Image insertion
+    insertImage
   };
 }

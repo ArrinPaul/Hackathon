@@ -46,6 +46,39 @@ export function drawGrid(ctx: CanvasRenderingContext2D, viewport: Viewport, w: n
   }
 }
 
+const imageCache: Record<string, HTMLImageElement> = {};
+
+function drawPen(ctx: CanvasRenderingContext2D, shape: Shape, viewport: Viewport) {
+  if (!shape.points || shape.points.length === 0) return;
+  ctx.beginPath();
+  // Render points relative to shape.x, shape.y
+  const start = worldToScreen(shape.x + shape.points[0].x, shape.y + shape.points[0].y, viewport);
+  ctx.moveTo(start.x, start.y);
+  for (let i = 1; i < shape.points.length; i++) {
+    const pt = worldToScreen(shape.x + shape.points[i].x, shape.y + shape.points[i].y, viewport);
+    ctx.lineTo(pt.x, pt.y);
+  }
+  ctx.strokeStyle = shape.stroke;
+  ctx.lineWidth = shape.strokeWidth * viewport.zoom;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+}
+
+function drawImageShape(ctx: CanvasRenderingContext2D, s: ReturnType<typeof worldToScreenShape>, shape: Shape, viewport: Viewport) {
+  if (!shape.imageData) return;
+  const cached = imageCache[shape.id];
+  if (cached) {
+    if (cached.complete && cached.naturalWidth !== 0) {
+      ctx.drawImage(cached, s.x, s.y, s.w, s.h);
+    }
+  } else {
+    const img = new Image();
+    img.src = shape.imageData;
+    imageCache[shape.id] = img;
+  }
+}
+
 export function drawShape(ctx: CanvasRenderingContext2D, shape: Shape, viewport: Viewport) {
   const s = worldToScreenShape(shape, viewport);
   ctx.save();
@@ -58,9 +91,11 @@ export function drawShape(ctx: CanvasRenderingContext2D, shape: Shape, viewport:
     case 'diamond': drawDiamond(ctx, s, shape, viewport); break;
     case 'text': drawTextShape(ctx, s, shape, viewport); break;
     case 'sticky': drawSticky(ctx, s, shape, viewport); break;
+    case 'pen': drawPen(ctx, shape, viewport); break;
+    case 'image': drawImageShape(ctx, s, shape, viewport); break;
   }
 
-  if (shape.text && shape.type !== 'text') {
+  if (shape.text && shape.type !== 'text' && shape.type !== 'pen' && shape.type !== 'image') {
     drawTextInShape(ctx, s, shape, viewport.zoom);
   }
 

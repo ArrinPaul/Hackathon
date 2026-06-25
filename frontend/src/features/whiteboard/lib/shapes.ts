@@ -1,4 +1,4 @@
-export type ShapeType = 'rect' | 'rrect' | 'ellipse' | 'diamond' | 'text' | 'sticky' | 'arrow' | 'line';
+export type ShapeType = 'rect' | 'rrect' | 'ellipse' | 'diamond' | 'text' | 'sticky' | 'arrow' | 'line' | 'pen' | 'image';
 
 export interface Shape {
   id: string;
@@ -17,6 +17,10 @@ export interface Shape {
   textAlign: 'left' | 'center' | 'right';
   startShapeId: string | null;
   endShapeId: string | null;
+  points?: { x: number; y: number }[]; // For pen strokes
+  imageData?: string; // Base64 or URL data for image insertion
+  groupId?: string | null; // For shape grouping
+  layerIndex?: number; // Order index for layers
 }
 
 export interface Viewport {
@@ -44,6 +48,8 @@ const SHAPE_DEFAULTS: Record<ShapeType, Partial<Shape>> = {
   sticky:     { width: 160, height: 160, fill: '#ffeaa7', stroke: '#fdcb6e', strokeWidth: 1 },
   arrow:      { width: 0, height: 0, fill: 'transparent', stroke: '#333333', strokeWidth: 2 },
   line:       { width: 0, height: 0, fill: 'transparent', stroke: '#333333', strokeWidth: 2 },
+  pen:        { width: 0, height: 0, fill: 'transparent', stroke: '#333333', strokeWidth: 2 },
+  image:      { width: 200, height: 150, fill: 'transparent', stroke: 'transparent', strokeWidth: 0 },
 };
 
 export function createShape(type: ShapeType, overrides: Partial<Shape> = {}): Shape {
@@ -65,12 +71,15 @@ export function createShape(type: ShapeType, overrides: Partial<Shape> = {}): Sh
     textAlign: 'center',
     startShapeId: null,
     endShapeId: null,
+    groupId: null,
+    layerIndex: 0,
     ...overrides,
   };
 }
 
 export const TOOL_LIST = [
   { id: 'select', label: 'Select', key: 'V' },
+  { id: 'pen', label: 'Pen', key: 'P' },
   { id: 'rect', label: 'Rectangle', key: 'R' },
   { id: 'rrect', label: 'Rounded Rect', key: '' },
   { id: 'ellipse', label: 'Ellipse', key: 'E' },
@@ -78,6 +87,7 @@ export const TOOL_LIST = [
   { id: 'text', label: 'Text', key: 'T' },
   { id: 'arrow', label: 'Arrow', key: 'A' },
   { id: 'sticky', label: 'Sticky Note', key: 'S' },
+  { id: 'image', label: 'Image', key: 'I' },
 ] as const;
 
 export type ToolId = typeof TOOL_LIST[number]['id'];
