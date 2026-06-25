@@ -31,7 +31,7 @@ export function MobileFooter({ onMenuClick }: MobileFooterProps) {
               <button
                 key={i}
                 onClick={item.onClick}
-                className="flex flex-col items-center gap-1 text-primary-foreground/70 hover:text-primary-foreground transition-standard"
+                className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-standard"
               >
                 <item.icon className="w-5 h-5" />
                 <span className="text-[10px]">{item.label}</span>
@@ -46,7 +46,7 @@ export function MobileFooter({ onMenuClick }: MobileFooterProps) {
               href={href}
               className={cn(
                 "flex flex-col items-center gap-1 transition-standard",
-                isActive(href) ? "text-primary-foreground" : "text-primary-foreground/70"
+                isActive(href) ? "text-white" : "text-white/70"
               )}
             >
               <item.icon className="w-5 h-5" />

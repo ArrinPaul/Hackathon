@@ -12,14 +12,14 @@ interface StatCardProps {
 
 export function StatCard({ icon: Icon, label, value, color = "bg-primary/10 text-primary" }: StatCardProps) {
   return (
-    <div className="bg-white border border-border rounded-[10px] p-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center", color)}>
+    <div className="bg-white border border-border rounded-xl p-5 card-hover">
+      <div className="flex items-center gap-4">
+        <div className={cn("w-11 h-11 rounded-lg flex items-center justify-center", color)}>
           <Icon className="w-5 h-5" />
         </div>
         <div>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold text-foreground tracking-tight">{value}</p>
+          <p className="text-xs text-muted-foreground font-medium">{label}</p>
         </div>
       </div>
     </div>
