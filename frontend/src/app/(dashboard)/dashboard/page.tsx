@@ -61,18 +61,23 @@ export default function DashboardPage() {
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="max-w-[1400px] mx-auto space-y-6">
+
+      {/* ── Hero banner ── */}
       <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-1 tracking-tight" style={{ letterSpacing: "-0.04em" }}>
+            <h1
+              className="text-3xl md:text-4xl font-bold mb-1 tracking-tight"
+              style={{ letterSpacing: "-0.04em" }}
+            >
               {getGreeting()}, {user?.name?.split(" ")[0] || "Student"} 👋
             </h1>
             <p className="text-white/70 text-sm">
               Here&apos;s what&apos;s happening with your deadlines today.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-3 text-sm flex-wrap">
             <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5">
               <CalendarDays className="w-4 h-4" />
               <span className="font-medium">{getFormattedDate()}</span>
@@ -85,6 +90,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* ── Row 1: Stat cards ── */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
@@ -92,48 +98,50 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in-up">
-          <StatCard icon={ListTodo} label="Total Tasks" value={String(totalCount)} color="bg-primary/10 text-primary" />
-          <StatCard icon={Clock} label="Pending" value={String(pendingCount)} color="bg-primary/5 text-primary" />
-          <StatCard icon={CheckCircle} label="Completed" value={String(completedCount)} color="bg-primary/10 text-primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard icon={ListTodo} label="Total Tasks"  value={String(totalCount)}    color="bg-primary/10 text-primary" />
+          <StatCard icon={Clock}    label="Pending"      value={String(pendingCount)}   color="bg-amber-50 text-amber-600" />
+          <StatCard icon={CheckCircle} label="Completed" value={String(completedCount)} color="bg-emerald-50 text-emerald-600" />
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Row 2: Calendar  |  Tasks + Deadlines ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <MonthlyCalendarWidget />
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6">
           <TodayTasksWidget />
           <UpcomingDeadlinesWidget />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Row 3: Attendance  |  Study Streak ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <AttendanceWidget />
         <StudyStreakWidget />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ── Row 4: Quick Actions  |  Weekly Progress  |  Upcoming Events ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         <QuickActionsWidget />
         <WeeklyProgressWidget />
         <UpcomingEventsWidget />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ── Row 5: Recent Activity  |  Productivity Score  |  Focus Timer ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         <RecentActivityWidget />
         <ProductivityScoreWidget />
         <FocusTimerWidget />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* ── Row 6: Campus News  |  Achievements ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         <CampusNewsWidget />
         <AchievementWidget />
       </div>
 
-      <div className="flex justify-center">
-        <div className="w-full max-w-lg">
-          <QuoteWidget />
-        </div>
-      </div>
+      {/* ── Row 7: Quote (full-width centered) ── */}
+      <QuoteWidget />
     </div>
   );
 }
