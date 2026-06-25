@@ -72,10 +72,13 @@ async function generateFlashcards(notes) {
         {
           role: "system",
           content: `You are a flashcard generator for students. Convert the given notes into flashcards.
-Return ONLY a JSON array of objects with "front" (question/concept) and "back" (answer/explanation).
+Return ONLY a JSON array of objects with:
+- "front": question/concept prompt
+- "back": answer/explanation
+- "citation": a direct, brief quote from the notes supporting this flashcard.
 Create 8-12 flashcards covering the key concepts.
 Do not include any markdown format, backticks, or text outside the JSON array.
-Format: [{"front": "question", "back": "answer"}, ...]`
+Format: [{"front": "question", "back": "answer", "citation": "quote from notes"}, ...]`
         },
         { role: "user", content: `Create flashcards from these notes:\n\n${notes}` }
       ],
@@ -91,24 +94,52 @@ Format: [{"front": "question", "back": "answer"}, ...]`
   }
 }
 
-async function generateQuiz(notes, count = 10) {
-  try {
-    const res = await groq.chat.completions.create({
-      model: "gemma2-9b-it",
-      messages: [
-        {
-          role: "system",
-          content: `You are a quiz generator for students. Create multiple choice questions from the given notes.
+async function generateQuiz(notes, count = 10, type = "mcq") {
+  let promptContent = "";
+  if (type === "tf") {
+    promptContent = `You are a quiz generator. Create True/False questions from the given notes.
+Return ONLY a JSON array of objects with:
+- "question": the question text
+- "options": exactly ["True", "False"]
+- "correctIndex": index of correct answer (0 for True, 1 for False)
+- "explanation": concise explanation of why the answer is correct
+- "citation": direct quote from the notes supporting the answer
+
+Create exactly ${count} questions.
+Do not include any markdown format, backticks, or text outside the JSON array.
+Format: [{"question": "...", "options": ["True", "False"], "correctIndex": 0, "explanation": "...", "citation": "..."}, ...]`;
+  } else if (type === "short_answer") {
+    promptContent = `You are a quiz generator. Create open-ended short answer questions from the given notes.
+Return ONLY a JSON array of objects with:
+- "question": the question text
+- "modelAnswer": a concise, exemplary model response (1-2 sentences)
+- "explanation": key criteria or concepts that must be mentioned to get full credit
+- "citation": direct quote or reference from the notes supporting the concept
+
+Create exactly ${count} questions.
+Do not include any markdown format, backticks, or text outside the JSON array.
+Format: [{"question": "...", "modelAnswer": "...", "explanation": "...", "citation": "..."}, ...]`;
+  } else {
+    // Default MCQ
+    promptContent = `You are a quiz generator. Create multiple choice questions from the given notes.
 Return ONLY a JSON array of objects with:
 - "question": the question text
 - "options": array of exactly 4 answer options
 - "correctIndex": index of correct answer (0, 1, 2, or 3)
+- "explanation": concise explanation of why the correct option is correct
+- "citation": direct quote from the notes supporting the answer
 
 Create exactly ${count} questions.
 Do not include any markdown format, backticks, or text outside the JSON array.
-Format: [{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 0}, ...]`
-        },
-        { role: "user", content: `Create a quiz from these notes:\n\n${notes}` }
+Format: [{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 0, "explanation": "...", "citation": "..."}, ...]`;
+  }
+
+  try {
+    const res = await groq.chat.completions.create({
+      model: "gemma2-9b-it",
+      messages: [
+        { role: "system", content: promptContent },
+        { role: "user", content: `Create a ${type} quiz from these notes:\n\n${notes}` }
       ],
       temperature: 0.7,
       max_tokens: 2048,
@@ -119,6 +150,38 @@ Format: [{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 0}
   } catch (err) {
     console.error("Quiz generation error:", err);
     throw new Error(err.message || "Failed to generate quiz");
+  }
+}
+
+async function gradeShortAnswer(question, modelAnswer, userAnswer) {
+  try {
+    const res = await groq.chat.completions.create({
+      model: "gemma2-9b-it",
+      messages: [
+        {
+          role: "system",
+          content: `You are an academic grader evaluating student short-answer responses against a question and a reference model answer.
+Evaluate the response objectively.
+Return ONLY a JSON object with:
+- "score": number from 0 to 100
+- "feedback": a concise (1-2 sentences) evaluation of what was correct and what key points were missed
+- "isCorrect": boolean (true if score is 70 or above, false otherwise)
+Do not include any markdown, backticks, or explanation text outside the JSON object.`
+        },
+        {
+          role: "user",
+          content: `Question: ${question}\nModel Answer: ${modelAnswer}\nStudent Answer: ${userAnswer}`
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 512,
+    });
+    const text = res.choices[0]?.message?.content || "";
+    const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(cleaned);
+  } catch (err) {
+    console.error("Short answer grading error:", err);
+    throw new Error(err.message || "Failed to grade short answer");
   }
 }
 
@@ -215,6 +278,7 @@ module.exports = {
   chatResponse,
   generateFlashcards,
   generateQuiz,
+  gradeShortAnswer,
   executeSmartTool
 };
 

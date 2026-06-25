@@ -6,6 +6,7 @@ const {
   chatResponse,
   generateFlashcards,
   generateQuiz,
+  gradeShortAnswer,
   executeSmartTool
 } = require("../services/groq");
 
@@ -63,14 +64,27 @@ router.post("/flashcards", authMiddleware, async (req, res) => {
 
 router.post("/quiz", authMiddleware, async (req, res) => {
   try {
-    const { notes, count } = req.body;
+    const { notes, count, type } = req.body;
     if (!notes) {
       return res.status(400).json({ message: "Notes content is required" });
     }
-    const questions = await generateQuiz(notes, count);
+    const questions = await generateQuiz(notes, count, type || "mcq");
     res.json({ questions });
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to generate quiz" });
+  }
+});
+
+router.post("/grade-short-answer", authMiddleware, async (req, res) => {
+  try {
+    const { question, modelAnswer, userAnswer } = req.body;
+    if (!question || !modelAnswer || userAnswer === undefined) {
+      return res.status(400).json({ message: "Question, modelAnswer, and userAnswer are required" });
+    }
+    const result = await gradeShortAnswer(question, modelAnswer, userAnswer);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Failed to grade short answer response" });
   }
 });
 
@@ -89,4 +103,3 @@ router.post("/tool/:toolSlug", authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-
