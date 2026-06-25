@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useSidebar } from "@/hooks/useSidebar";
 import { Sidebar } from "@/components/shared/Sidebar";
@@ -13,8 +13,11 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { isCollapsed, isMobileOpen, toggleCollapse, openMobile, closeMobile } = useSidebar();
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const isWhiteboard = pathname?.startsWith("/dashboard/whiteboard");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -48,13 +51,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       <div className="flex-1 flex flex-col min-h-screen">
-        <main className={`flex-1 overflow-auto ${!isDesktop ? "pb-16" : ""}`}>
-          <div className="p-6">{children}</div>
+        <main className={`flex-1 overflow-auto ${!isDesktop && !isWhiteboard ? "pb-16" : ""}`}>
+          <div className={isWhiteboard ? "p-4" : "p-6"}>{children}</div>
         </main>
 
-        {isDesktop && <DashboardFooter />}
+        {isDesktop && !isWhiteboard && <DashboardFooter />}
 
-        {!isDesktop && <MobileFooter onMenuClick={openMobile} />}
+        {!isDesktop && !isWhiteboard && <MobileFooter onMenuClick={openMobile} />}
       </div>
     </div>
   );

@@ -106,9 +106,7 @@ export function WhiteboardList({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm('Are you sure you want to delete this whiteboard?')) {
-                              onDeleteBoard(wb.id);
-                            }
+                            onDeleteBoard(wb.id);
                           }}
                           className="p-1.5 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-[6px] transition-colors"
                           title="Delete"

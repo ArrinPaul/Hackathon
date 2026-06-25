@@ -99,7 +99,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up stagger-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyCalendarWidget />
         <div className="space-y-6">
           <TodayTasksWidget />
@@ -107,29 +107,29 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="animate-fade-in-up stagger-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AttendanceWidget />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up stagger-4">
-        <QuickActionsWidget />
-        <WeeklyProgressWidget />
         <StudyStreakWidget />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up stagger-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <QuickActionsWidget />
+        <WeeklyProgressWidget />
         <UpcomingEventsWidget />
-        <RecentActivityWidget />
-        <ProductivityScoreWidget />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up stagger-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <RecentActivityWidget />
+        <ProductivityScoreWidget />
         <FocusTimerWidget />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CampusNewsWidget />
         <AchievementWidget />
       </div>
 
-      <div className="flex justify-center animate-fade-in-up stagger-7">
+      <div className="flex justify-center">
         <div className="w-full max-w-lg">
           <QuoteWidget />
         </div>
