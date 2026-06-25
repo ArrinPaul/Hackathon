@@ -1,0 +1,214 @@
+{
+  "name": "notifyme-ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "node-tg-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "bbb00002-0000-0000-0000-000000000002",
+      "credentials": {
+        "telegramApi": {
+          "id": "h2Q6l1bxyZuXkLTL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-teacher",
+              "leftValue": "={{ $vars.TEACHER_IDS.split(',').includes(String($json.message.from.id)) || ($json.message.text || '').startsWith('/create') }}",
+              "rightValue": "true",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "id": "cond-has-text",
+              "leftValue": "={{ $json.message.text || '' }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-teacher",
+      "name": "IF — Is Teacher",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-student",
+      "name": "Not a Teacher — Discard",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 460]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.BACKEND_URL }}/groups/by-chat-id",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.message.chat.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-get-group-id",
+      "name": "GET /groups/by-chat-id",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a deadline-extraction engine for a college student app.\nYou will receive a raw message from a Telegram group sent by a teacher.\nYour job: decide if it contains an actionable academic deadline or important date, and if so extract it.\n\nRespond with ONLY valid JSON, no markdown, no explanation, no backticks. Use this exact schema:\n\n{\n  \"is_relevant\": true or false,\n  \"title\": \"short title of the deadline/event\",\n  \"date\": \"YYYY-MM-DD\",\n  \"priority\": \"High\" or \"Medium\" or \"Low\",\n  \"category\": \"Exam\" or \"Assignment\" or \"Attendance\" or \"Fee\" or \"Placement\" or \"Other\"\n}\n\nRules:\n- If the message is a greeting, casual chat, or has NO clear date or deadline — set is_relevant to false and all other fields to null.\n- Examples of irrelevant: \"Hi good morning\", \"ok class dismissed\", \"lol FIFA tonight\", \"see you all tomorrow\"\n- Today's date is {{ $now.toFormat('yyyy-MM-dd') }}. Resolve relative dates like \"tomorrow\", \"next Monday\", \"in 3 days\" against this.\n- Exams and hall tickets = High. Fee/Attendance forms = Medium. Assignments = Medium. Club events = Low.\n- If multiple deadlines in one message, extract only the most urgent (earliest date).\n\nMessage:\n{{ $('Telegram Trigger').item.json.message.text }}",
+        "messages": { "messageValues": [] }
+      },
+      "id": "node-llm-chain",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": { "temperature": 0 }
+      },
+      "id": "node-gemini-model",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JELWxw4K7dbi4QIH",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-relevant",
+              "leftValue": "={{ JSON.parse($json.text.replace(/```json|```/g, '').trim()).is_relevant }}",
+              "rightValue": "true",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-relevant",
+      "name": "IF — Is Relevant",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-irrelevant",
+      "name": "Not Relevant — Discard",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1340, 360]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $vars.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $vars.SUPABASE_ANON_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const parsed = JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json|```/g, '').trim()); const group_id = $('GET /groups/by-chat-id').item.json.group_id; const raw = $('Telegram Trigger').item.json.message.text; return JSON.stringify({ group_id: group_id, title: parsed.title, event_date: parsed.date, priority: parsed.priority, category: parsed.category, raw_message: raw, source: 'telegram' }); })() }}",
+        "options": {}
+      },
+      "id": "node-supabase-insert",
+      "name": "Insert Event to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.BACKEND_URL }}/calendar/fan-out",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event_id\": \"{{ $json[0].id }}\"\n}",
+        "options": {}
+      },
+      "id": "node-fan-out",
+      "name": "POST /calendar/fan-out",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 100]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [[{"node": "IF — Is Teacher", "type": "main", "index": 0}]]
+    },
+    "IF — Is Teacher": {
+      "main": [
+        [{"node": "GET /groups/by-chat-id", "type": "main", "index": 0}],
+        [{"node": "Not a Teacher — Discard", "type": "main", "index": 0}]
+      ]
+    },
+    "GET /groups/by-chat-id": {
+      "main": [[{"node": "Basic LLM Chain", "type": "main", "index": 0}]]
+    },
+    "Basic LLM Chain": {
+      "main": [[{"node": "IF — Is Relevant", "type": "main", "index": 0}]]
+    },
+    "IF — Is Relevant": {
+      "main": [
+        [{"node": "Insert Event to Supabase", "type": "main", "index": 0}],
+        [{"node": "Not Relevant — Discard", "type": "main", "index": 0}]
+      ]
+    },
+    "Insert Event to Supabase": {
+      "main": [[{"node": "POST /calendar/fan-out", "type": "main", "index": 0}]]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [[{"node": "Basic LLM Chain", "type": "ai_languageModel", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{"name": "notifyme"}]
+}

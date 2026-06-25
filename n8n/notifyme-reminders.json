@@ -1,0 +1,136 @@
+{
+  "name": "notifyme-reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "minutes", "minutesInterval": 30 }
+          ]
+        }
+      },
+      "id": "node-schedule",
+      "name": "Every 30 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.BACKEND_URL }}/reminders/due",
+        "options": {}
+      },
+      "id": "node-get-reminders",
+      "name": "GET /reminders/due",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-has-items",
+              "leftValue": "={{ Array.isArray($json) && $json.length > 0 }}",
+              "rightValue": "true",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-any",
+      "name": "IF — Any Reminders Due",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-none",
+      "name": "No Reminders — Do Nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 460]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "node-split",
+      "name": "Split Into Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.telegram_chat_id }}",
+        "text": "=⚠️ *{{ $json.title }}* is in *{{ $json.days_left }} day(s)* — {{ $json.event_date }}\n\nCategory: {{ $json.category }} | Priority: {{ $json.priority }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "node-send-reminder",
+      "name": "Send Telegram Reminder",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "h2Q6l1bxyZuXkLTL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.BACKEND_URL }}/reminders/{{ $('Split Into Items').item.json.id }}/mark-sent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "remind_offset_days",
+              "value": "={{ $('Split Into Items').item.json.days_left }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-mark-sent",
+      "name": "PATCH /reminders/mark-sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 200]
+    }
+  ],
+  "connections": {
+    "Every 30 Minutes": {
+      "main": [[{"node": "GET /reminders/due", "type": "main", "index": 0}]]
+    },
+    "GET /reminders/due": {
+      "main": [[{"node": "IF — Any Reminders Due", "type": "main", "index": 0}]]
+    },
+    "IF — Any Reminders Due": {
+      "main": [
+        [{"node": "Split Into Items", "type": "main", "index": 0}],
+        [{"node": "No Reminders — Do Nothing", "type": "main", "index": 0}]
+      ]
+    },
+    "Split Into Items": {
+      "main": [[{"node": "Send Telegram Reminder", "type": "main", "index": 0}]]
+    },
+    "Send Telegram Reminder": {
+      "main": [[{"node": "PATCH /reminders/mark-sent", "type": "main", "index": 0}]]
+    },
+    "PATCH /reminders/mark-sent": {
+      "main": [[{"node": "Split Into Items", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{"name": "notifyme"}]
+}

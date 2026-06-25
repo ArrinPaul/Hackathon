@@ -1,0 +1,159 @@
+{
+  "name": "notifyme-group-register",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "node-tg-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "aaa00001-0000-0000-0000-000000000001",
+      "credentials": {
+        "telegramApi": {
+          "id": "h2Q6l1bxyZuXkLTL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-start",
+              "leftValue": "={{ ($json.message.text || '').startsWith('/start') }}",
+              "rightValue": "true",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "id": "cond-group",
+              "leftValue": "={{ $json.message.chat.type }}",
+              "rightValue": "private",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-start",
+      "name": "IF — /start in a Group",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-ignore",
+      "name": "Not /start — Ignore",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 460]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.BACKEND_URL }}/groups/register",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"telegram_chat_id\": {{ $json.message.chat.id }},\n  \"name\": \"{{ $json.message.chat.title }}\"\n}",
+        "options": {}
+      },
+      "id": "node-register-group",
+      "name": "POST /groups/register",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-has-invite",
+              "leftValue": "={{ $json.invite_link }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-registered",
+      "name": "IF — Registration Successful",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ *NotifyMe is now active in this group!*\n\nStudents, sign up here to get all deadlines automatically in your Google Calendar:\n{{ $json.invite_link }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "node-send-invite",
+      "name": "Send Invite Link to Group",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1120, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "h2Q6l1bxyZuXkLTL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "⚠️ NotifyMe could not register this group. Please try /start again.",
+        "additionalFields": {}
+      },
+      "id": "node-send-error",
+      "name": "Send Error Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1120, 320],
+      "credentials": {
+        "telegramApi": {
+          "id": "h2Q6l1bxyZuXkLTL",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [[{"node": "IF — /start in a Group", "type": "main", "index": 0}]]
+    },
+    "IF — /start in a Group": {
+      "main": [
+        [{"node": "POST /groups/register", "type": "main", "index": 0}],
+        [{"node": "Not /start — Ignore", "type": "main", "index": 0}]
+      ]
+    },
+    "POST /groups/register": {
+      "main": [[{"node": "IF — Registration Successful", "type": "main", "index": 0}]]
+    },
+    "IF — Registration Successful": {
+      "main": [
+        [{"node": "Send Invite Link to Group", "type": "main", "index": 0}],
+        [{"node": "Send Error Message", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{"name": "notifyme"}]
+}
