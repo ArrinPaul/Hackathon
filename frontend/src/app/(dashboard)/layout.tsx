@@ -7,6 +7,7 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { MobileFooter } from "@/components/shared/MobileFooter";
 import { MobileNav } from "@/components/shared/MobileNav";
+import { DashboardFooter } from "@/components/shared/DashboardFooter";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -32,9 +33,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex min-h-screen">
       {isDesktop ? (
-        <Sidebar isCollapsed={isCollapsed} onToggle={toggleCollapse} />
+        <div className="sticky top-0 h-screen flex-shrink-0">
+          <Sidebar isCollapsed={isCollapsed} onToggle={toggleCollapse} />
+        </div>
       ) : (
         <MobileNav
           isOpen={isMobileOpen}
@@ -44,11 +47,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       )}
 
-      <main className={`flex-1 overflow-auto ${!isDesktop ? "pb-16" : ""}`}>
-        <div className="p-6">{children}</div>
-      </main>
+      <div className="flex-1 flex flex-col min-h-screen">
+        <main className={`flex-1 overflow-auto ${!isDesktop ? "pb-16" : ""}`}>
+          <div className="p-6">{children}</div>
+        </main>
 
-      {!isDesktop && <MobileFooter onMenuClick={openMobile} />}
+        {isDesktop && <DashboardFooter />}
+
+        {!isDesktop && <MobileFooter onMenuClick={openMobile} />}
+      </div>
     </div>
   );
 }

@@ -66,14 +66,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-white rounded-[10px] shadow-xl p-8">
+    <div className="bg-white rounded-xl border border-border p-8 shadow-sm">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-foreground">Login to continue</h1>
+        <h1 className="text-xl font-bold text-foreground" style={{ letterSpacing: "-0.02em" }}>Login to continue</h1>
         <p className="text-sm text-muted-foreground mt-1">Use your email or service</p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-[10px] text-sm text-destructive">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
           {error}
         </div>
       )}
@@ -88,7 +88,7 @@ export default function LoginPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             placeholder="you@example.com"
             required
           />
@@ -104,7 +104,7 @@ export default function LoginPage() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 pr-10 border border-border rounded-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 pr-10 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="••••••••"
               required
             />
@@ -127,7 +127,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 bg-primary text-primary-foreground font-medium rounded-[10px] hover:opacity-90 transition-standard disabled:opacity-50"
+          className="w-full py-2.5 bg-primary text-white font-medium rounded-full hover:bg-primary/90 transition-standard disabled:opacity-50"
         >
           {loading ? "Logging in..." : "Continue"}
         </button>
@@ -145,7 +145,7 @@ export default function LoginPage() {
       <div className="space-y-3">
         <button
           onClick={handleGoogleLogin}
-          className="w-full py-2.5 border border-border rounded-[10px] text-sm font-medium text-foreground hover:bg-accent transition-standard flex items-center justify-center gap-2"
+          className="w-full py-2.5 border border-border rounded-full text-sm font-medium text-foreground hover:bg-muted transition-standard flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -155,7 +155,7 @@ export default function LoginPage() {
           </svg>
           Continue with Google
         </button>
-        <button className="w-full py-2.5 border border-border rounded-[10px] text-sm font-medium text-foreground hover:bg-accent transition-standard">
+        <button className="w-full py-2.5 border border-border rounded-full text-sm font-medium text-foreground hover:bg-muted transition-standard">
           Continue with GitHub
         </button>
       </div>
