@@ -70,10 +70,10 @@ export function AttendanceWidget() {
           <p className="text-xs text-muted-foreground">Start tracking your attendance</p>
         </div>
       ) : (
-        <div>
+        <div className="space-y-4">
           {attendance.length > 1 && (
-            <div className="flex items-center gap-4 mb-4 p-3 bg-muted/50 rounded-lg">
-              <div className="relative w-16 h-16">
+            <div className="flex items-center gap-5 p-4 bg-muted/40 rounded-xl">
+              <div className="relative w-16 h-16 shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
                   <circle cx="40" cy="40" r="38" fill="none" stroke="hsl(var(--border))" strokeWidth="5" />
                   <circle
@@ -89,10 +89,10 @@ export function AttendanceWidget() {
                   <span className="text-sm font-bold text-foreground">{overallPct}%</span>
                 </div>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground">Overall</p>
                 <p className="text-xs text-muted-foreground">{totalAttended}/{totalClasses} classes</p>
-                <div className="flex items-center gap-1 mt-0.5">
+                <div className="flex items-center gap-1 mt-1">
                   {overallPct >= 75 ? (
                     <TrendingUp className="w-3 h-3 text-emerald-500" />
                   ) : (
@@ -106,14 +106,14 @@ export function AttendanceWidget() {
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {attendance.slice(0, 5).map((record) => {
               const pct = getPercentage(record.attended_classes, record.total_classes);
               return (
-                <div key={record.id}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-foreground">{record.subject}</span>
-                    <span className={`text-sm font-semibold ${getTextColor(pct)}`}>{pct}%</span>
+                <div key={record.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground truncate">{record.subject}</span>
+                    <span className={`text-sm font-semibold tabular-nums ${getTextColor(pct)}`}>{pct}%</span>
                   </div>
                   <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                     <div

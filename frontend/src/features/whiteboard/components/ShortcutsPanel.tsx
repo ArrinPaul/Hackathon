@@ -31,6 +31,7 @@ export function ShortcutsPanel({ isOpen, onClose }: ShortcutsPanelProps) {
         { key: 'Ctrl + Z', desc: 'Undo' },
         { key: 'Ctrl + Y', desc: 'Redo' },
         { key: 'Del / Backspace', desc: 'Delete Selected' },
+        { key: 'Ctrl + D', desc: 'Duplicate Selected' },
         { key: 'Double Click', desc: 'Edit Shape Text' },
         { key: 'Ctrl + G', desc: 'Group Shapes' },
         { key: 'Ctrl + Shift + G', desc: 'Ungroup Shapes' },

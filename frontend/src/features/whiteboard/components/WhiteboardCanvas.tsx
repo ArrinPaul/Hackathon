@@ -9,7 +9,7 @@ import { ShortcutsPanel } from './ShortcutsPanel';
 import { Minimap } from './Minimap';
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Layers, ArrowLeft, Cloud, CloudRain, RefreshCw } from 'lucide-react';
+import { Layers, ArrowLeft, Cloud, CloudRain, RefreshCw, AlertCircle, CheckCircle2, Info, X, Trash2, Copy, Group, Ungroup } from 'lucide-react';
 import { worldToScreenShape } from '../lib/canvas-utils';
 
 interface WhiteboardCanvasProps {
@@ -85,13 +85,13 @@ export function WhiteboardCanvas({ whiteboardId, title, onBack }: WhiteboardCanv
           if (data.viewport) engine.setViewport(data.viewport);
           if (data.layers) engine.setLayers(data.layers);
         } catch {
-          alert('Invalid JSON file');
+          engine.showToast('Invalid JSON file. Please check the file format.', 'error');
         }
       };
       reader.readAsText(file);
     };
     input.click();
-  }, [engine.setShapes, engine.setViewport, engine.setLayers]);
+  }, [engine.setShapes, engine.setViewport, engine.setLayers, engine.showToast]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] border border-border rounded-[10px] overflow-hidden bg-white shadow-sm relative">
@@ -176,6 +176,52 @@ export function WhiteboardCanvas({ whiteboardId, title, onBack }: WhiteboardCanv
             onDoubleClick={engine.onDoubleClick}
             onContextMenu={e => e.preventDefault()}
           />
+
+          {/* Floating Selection Action Bar — appears when shape(s) are selected */}
+          {engine.selectedIds.length > 0 && !engine.editingId && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-white border border-border shadow-lg rounded-[10px] px-2 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+              <span className="text-[10px] font-semibold text-muted-foreground px-1 border-r border-border mr-1">
+                {engine.selectedIds.length} selected
+              </span>
+              <button
+                onClick={engine.duplicateSelected}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                title="Duplicate (Ctrl+D)"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Duplicate
+              </button>
+              {engine.selectedIds.length >= 2 && (
+                <button
+                  onClick={engine.groupSelected}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                  title="Group (Ctrl+G)"
+                >
+                  <Group className="w-3.5 h-3.5" />
+                  Group
+                </button>
+              )}
+              {engine.shapes.some(s => engine.selectedIds.includes(s.id) && s.groupId) && (
+                <button
+                  onClick={engine.ungroupSelected}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                  title="Ungroup (Ctrl+Shift+G)"
+                >
+                  <Ungroup className="w-3.5 h-3.5" />
+                  Ungroup
+                </button>
+              )}
+              <div className="w-px h-4 bg-border mx-1" />
+              <button
+                onClick={engine.deleteSelected}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-xs font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                title="Delete selected (Delete / Backspace)"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </div>
+          )}
 
           {/* Minimap Overlay component */}
           <Minimap
@@ -265,6 +311,26 @@ export function WhiteboardCanvas({ whiteboardId, title, onBack }: WhiteboardCanv
 
       {/* Shortcuts overlay panel */}
       <ShortcutsPanel isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+
+      {/* Toast Notification */}
+      {engine.toast && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-white border border-border shadow-lg rounded-[10px] px-4 py-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          {engine.toast.type === 'error' ? (
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+          ) : engine.toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+          ) : (
+            <Info className="w-4 h-4 text-blue-500 flex-shrink-0" />
+          )}
+          <span className="text-sm font-medium text-foreground">{engine.toast.message}</span>
+          <button
+            onClick={engine.clearToast}
+            className="ml-2 p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground cursor-pointer flex-shrink-0"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

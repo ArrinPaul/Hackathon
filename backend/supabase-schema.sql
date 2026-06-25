@@ -76,3 +76,15 @@ CREATE INDEX idx_tasks_deadline ON public.tasks(deadline);
 CREATE INDEX idx_notices_student_id ON public.notices(student_id);
 CREATE INDEX idx_attendance_student_id ON public.attendance(student_id);
 CREATE INDEX idx_automation_logs_student_id ON public.automation_logs(student_id);
+
+-- Whiteboards
+CREATE TABLE public.whiteboards (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID REFERENCES public.students(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'Untitled Whiteboard',
+  data JSONB NOT NULL DEFAULT '{}',
+  thumbnail TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_whiteboards_student_id ON public.whiteboards(student_id);

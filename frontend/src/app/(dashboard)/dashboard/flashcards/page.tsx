@@ -578,19 +578,19 @@ export default function FlashcardsPage() {
     .reduce((sum, s) => sum + s.content.length, 0);
 
   return (
-    <div className="min-h-screen bg-[#fcfbfa] text-[#2d3a34] p-6 space-y-6 max-w-6xl mx-auto rounded-[16px]">
+    <div className="min-h-screen bg-[#fdfaff] text-[#2d3a34] p-6 space-y-6 max-w-6xl mx-auto rounded-[16px]">
       
       {/* Header */}
-      <div className="border-b border-[#e4e2db] pb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="border-b border-[#e0d4f0] pb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-[#3d645a] font-semibold text-xs uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-[#5b21b6] font-semibold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
             Interactive Study Guide
           </div>
-          <h1 className="text-3xl font-serif text-[#1b2b24] mt-1 font-bold">
+          <h1 className="text-3xl font-serif text-[#2d1055] mt-1 font-bold">
             Notebook Flashcards
           </h1>
-          <p className="text-sm text-[#627267] mt-1 italic font-serif">
+          <p className="text-sm text-[#6b5a80] mt-1 italic font-serif">
             Upload text or PDF files, write notes, and rate cards with direct source citations, matching NotebookLM.
           </p>
         </div>
@@ -600,22 +600,22 @@ export default function FlashcardsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAddCardInline(!showAddCardInline)}
-              className="px-3.5 py-2 border border-[#3d645a] hover:bg-[#ebeae4]/40 text-xs font-semibold rounded-[10px] text-[#3d645a] transition-standard cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 border border-[#5b21b6] hover:bg-[#e8e0f2]/40 text-xs font-semibold rounded-[10px] text-[#5b21b6] transition-standard cursor-pointer flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Custom Card
             </button>
             <button
               onClick={handleClearDeck}
-              className="px-3.5 py-2 border border-[#d3c09e] hover:bg-[#fbf8f2] text-xs font-semibold rounded-[10px] text-[#967c47] transition-standard cursor-pointer"
+              className="px-3.5 py-2 border border-[#c4a8f0] hover:bg-[#fbf8f2] text-xs font-semibold rounded-[10px] text-[#7c3aed] transition-standard cursor-pointer"
             >
               Clear Deck
             </button>
             <button
               onClick={handleCopyAll}
-              className="px-3.5 py-2 bg-[#ebeae4] hover:bg-[#e0dfd8] text-xs font-semibold rounded-[10px] text-[#2d3a34] transition-standard cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-[#e8e0f2] hover:bg-[#e0daf0] text-xs font-semibold rounded-[10px] text-[#2d3a34] transition-standard cursor-pointer flex items-center gap-1.5"
             >
-              {copiedAll ? <Check className="w-3.5 h-3.5 text-green-700" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedAll ? <Check className="w-3.5 h-3.5 text-purple-700" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedAll ? "Copied All!" : "Copy Deck"}
             </button>
           </div>
@@ -634,16 +634,16 @@ export default function FlashcardsPage() {
         
         {/* Left Sidebar */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-[#f5f4f0] border border-[#e4e2db] rounded-[12px] p-5 space-y-4 shadow-xs">
+          <div className="bg-[#f3eff8] border border-[#e0d4f0] rounded-[12px] p-5 space-y-4 shadow-xs">
             
             {/* Sidebar Tabs */}
-            <div className="flex gap-1 border-b border-[#e4e2db] pb-2">
+            <div className="flex gap-1 border-b border-[#e0d4f0] pb-2">
               <button
                 onClick={() => setSidebarTab("sources")}
                 className={`flex-1 py-1.5 text-center text-xs font-semibold rounded-[8px] transition-standard cursor-pointer ${
                   sidebarTab === "sources"
-                    ? "bg-[#3d645a] text-white shadow-xs"
-                    : "text-[#627267] hover:text-[#2d3a34] hover:bg-[#ebeae4]/50"
+                    ? "bg-[#5b21b6] text-white shadow-xs"
+                    : "text-[#6b5a80] hover:text-[#2d3a34] hover:bg-[#e8e0f2]/50"
                 }`}
               >
                 Sources ({sources.length})
@@ -652,8 +652,8 @@ export default function FlashcardsPage() {
                 onClick={() => setSidebarTab("notes")}
                 className={`flex-1 py-1.5 text-center text-xs font-semibold rounded-[8px] transition-standard cursor-pointer ${
                   sidebarTab === "notes"
-                    ? "bg-[#3d645a] text-white shadow-xs"
-                    : "text-[#627267] hover:text-[#2d3a34] hover:bg-[#ebeae4]/50"
+                    ? "bg-[#5b21b6] text-white shadow-xs"
+                    : "text-[#6b5a80] hover:text-[#2d3a34] hover:bg-[#e8e0f2]/50"
                 }`}
               >
                 Saved Notes ({notesList.length})
@@ -664,7 +664,7 @@ export default function FlashcardsPage() {
             {sidebarTab === "sources" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-[#2d4a43] text-xs uppercase tracking-wider font-mono">
+                  <h4 className="font-semibold text-[#4c1d95] text-xs uppercase tracking-wider font-mono">
                     Notebook Documents
                   </h4>
                   <button 
@@ -676,7 +676,7 @@ export default function FlashcardsPage() {
                       setUploadError("");
                       setIsSourceModalOpen(true);
                     }}
-                    className="text-[10px] font-semibold text-[#3d645a] hover:text-[#2d4a43] flex items-center gap-1 transition-standard cursor-pointer"
+                    className="text-[10px] font-semibold text-[#5b21b6] hover:text-[#4c1d95] flex items-center gap-1 transition-standard cursor-pointer"
                   >
                     <Plus className="w-3 h-3" />
                     Add Source
@@ -685,7 +685,7 @@ export default function FlashcardsPage() {
 
                 <div className="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
                   {sources.length === 0 ? (
-                    <div className="border border-dashed border-[#d2d9d1] rounded-[10px] p-6 text-center text-xs text-[#8c9c91] font-serif italic">
+                    <div className="border border-dashed border-[#cfc0e0] rounded-[10px] p-6 text-center text-xs text-[#8b7a9e] font-serif italic">
                       No source documents found. Add your reference notes.
                     </div>
                   ) : (
@@ -697,8 +697,8 @@ export default function FlashcardsPage() {
                           onClick={() => handleToggleSelectSource(doc.id)}
                           className={`group border rounded-[10px] p-3 transition-standard cursor-pointer flex items-start gap-2.5 relative ${
                             isChecked 
-                              ? "bg-white border-[#3d645a]/40 shadow-xs" 
-                              : "bg-transparent border-[#e4e2db] hover:bg-[#ebeae4]/45"
+                              ? "bg-white border-[#5b21b6]/40 shadow-xs" 
+                              : "bg-transparent border-[#e0d4f0] hover:bg-[#e8e0f2]/45"
                           }`}
                         >
                           <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
@@ -706,18 +706,18 @@ export default function FlashcardsPage() {
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => handleToggleSelectSource(doc.id)}
-                              className="w-3.5 h-3.5 accent-[#3d645a] rounded-sm cursor-pointer"
+                              className="w-3.5 h-3.5 accent-[#5b21b6] rounded-sm cursor-pointer"
                             />
                           </div>
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <FileText className={`w-3.5 h-3.5 flex-shrink-0 ${isChecked ? "text-[#3d645a]" : "text-[#8c9c91]"}`} />
+                              <FileText className={`w-3.5 h-3.5 flex-shrink-0 ${isChecked ? "text-[#5b21b6]" : "text-[#8b7a9e]"}`} />
                               <h4 className="font-semibold text-xs text-[#2d3a34] truncate pr-12">
                                 {doc.title}
                               </h4>
                             </div>
-                            <p className="text-[10px] text-[#627267] mt-1 font-mono">
+                            <p className="text-[10px] text-[#6b5a80] mt-1 font-mono">
                               {doc.content.split(/\s+/).filter(Boolean).length} words
                             </p>
                           </div>
@@ -726,14 +726,14 @@ export default function FlashcardsPage() {
                           <div className="absolute right-2 top-2 flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-standard" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleStartEditSource(doc)}
-                              className="p-1 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#ebeae4] rounded-md transition-standard cursor-pointer"
+                              className="p-1 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#e8e0f2] rounded-md transition-standard cursor-pointer"
                               title="Edit Source"
                             >
                               <Edit2 className="w-3 h-3" />
                             </button>
                             <button
                               onClick={(e) => handleDeleteSource(doc.id, e)}
-                              className="p-1 text-[#8c9c91] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
+                              className="p-1 text-[#8b7a9e] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
                               title="Delete Source"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -746,11 +746,11 @@ export default function FlashcardsPage() {
                 </div>
 
                 {sources.length > 0 && (
-                  <div className="pt-2 border-t border-[#e4e2db] space-y-3">
+                  <div className="pt-2 border-t border-[#e0d4f0] space-y-3">
                     <button
                       onClick={handleGenerate}
                       disabled={loading || selectedSourceIds.length === 0}
-                      className="w-full py-2.5 bg-[#3d645a] hover:bg-[#2d4a43] disabled:opacity-50 text-white font-semibold rounded-[10px] text-xs transition-standard cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+                      className="w-full py-2.5 bg-[#5b21b6] hover:bg-[#4c1d95] disabled:opacity-50 text-white font-semibold rounded-[10px] text-xs transition-standard cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                     >
                       {loading ? (
                         <>
@@ -773,7 +773,7 @@ export default function FlashcardsPage() {
             {sidebarTab === "notes" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-[#2d4a43] text-xs uppercase tracking-wider font-mono">
+                  <h4 className="font-semibold text-[#4c1d95] text-xs uppercase tracking-wider font-mono">
                     Notebook Notes
                   </h4>
                   <button 
@@ -783,7 +783,7 @@ export default function FlashcardsPage() {
                       setNoteModalContent("");
                       setIsNoteModalOpen(true);
                     }}
-                    className="text-[10px] font-semibold text-[#3d645a] hover:text-[#2d4a43] flex items-center gap-1 transition-standard cursor-pointer"
+                    className="text-[10px] font-semibold text-[#5b21b6] hover:text-[#4c1d95] flex items-center gap-1 transition-standard cursor-pointer"
                   >
                     <Plus className="w-3 h-3" />
                     Create Note
@@ -792,14 +792,14 @@ export default function FlashcardsPage() {
 
                 <div className="space-y-3 max-h-[390px] overflow-y-auto pr-1">
                   {notesList.length === 0 ? (
-                    <div className="border border-dashed border-[#d2d9d1] rounded-[10px] p-6 text-center text-xs text-[#8c9c91] font-serif italic">
+                    <div className="border border-dashed border-[#cfc0e0] rounded-[10px] p-6 text-center text-xs text-[#8b7a9e] font-serif italic">
                       No written notes saved. Pinned items will appear here.
                     </div>
                   ) : (
                     notesList.map((note) => (
                       <div 
                         key={note.id}
-                        className="bg-white border border-[#e4e2db] rounded-[10px] p-3 shadow-2xs space-y-2 relative group hover:border-[#3d645a]/30 transition-standard"
+                        className="bg-white border border-[#e0d4f0] rounded-[10px] p-3 shadow-2xs space-y-2 relative group hover:border-[#5b21b6]/30 transition-standard"
                       >
                         <div className="flex items-start justify-between gap-6">
                           <h5 className="font-bold text-xs text-[#2d3a34] line-clamp-1 pr-6 font-serif">
@@ -809,14 +809,14 @@ export default function FlashcardsPage() {
                           <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-standard">
                             <button
                               onClick={() => handleStartEditNote(note)}
-                              className="p-1 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#ebeae4] rounded-md transition-standard cursor-pointer"
+                              className="p-1 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#e8e0f2] rounded-md transition-standard cursor-pointer"
                               title="Edit Note"
                             >
                               <Edit2 className="w-3 h-3" />
                             </button>
                             <button
                               onClick={() => handleDeleteNote(note.id)}
-                              className="p-1 text-[#8c9c91] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
+                              className="p-1 text-[#8b7a9e] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
                               title="Delete Note"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -824,7 +824,7 @@ export default function FlashcardsPage() {
                           </div>
                         </div>
 
-                        <p className="text-[11px] text-[#627267] font-serif leading-relaxed line-clamp-4 whitespace-pre-wrap">
+                        <p className="text-[11px] text-[#6b5a80] font-serif leading-relaxed line-clamp-4 whitespace-pre-wrap">
                           {note.content}
                         </p>
                       </div>
@@ -842,15 +842,15 @@ export default function FlashcardsPage() {
           
           {/* Inline Add Card */}
           {showAddCardInline && (
-            <div className="bg-[#fcfbfa] border border-[#d2d9d1] rounded-[12px] p-5 space-y-3.5 shadow-xs">
-              <div className="flex justify-between items-center border-b border-[#e4e2db] pb-2">
-                <h4 className="font-bold text-xs text-[#1b2b24] uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                  <Plus className="w-4 h-4 text-[#3d645a]" />
+            <div className="bg-[#fdfaff] border border-[#cfc0e0] rounded-[12px] p-5 space-y-3.5 shadow-xs">
+              <div className="flex justify-between items-center border-b border-[#e0d4f0] pb-2">
+                <h4 className="font-bold text-xs text-[#2d1055] uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                  <Plus className="w-4 h-4 text-[#5b21b6]" />
                   Create Manual Flashcard
                 </h4>
                 <button
                   onClick={() => setShowAddCardInline(false)}
-                  className="text-xs text-[#8c9c91] hover:text-[#2d3a34] font-bold cursor-pointer"
+                  className="text-xs text-[#8b7a9e] hover:text-[#2d3a34] font-bold cursor-pointer"
                 >
                   <XCircle className="w-4.5 h-4.5" />
                 </button>
@@ -858,39 +858,39 @@ export default function FlashcardsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-[#627267] uppercase mb-1">
+                  <label className="block text-[10px] font-bold text-[#6b5a80] uppercase mb-1">
                     Front / Prompt *
                   </label>
                   <input
                     type="text"
                     value={newCardFront}
                     onChange={(e) => setNewCardFront(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34] font-sans"
+                    className="w-full px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34] font-sans"
                     placeholder="e.g. What is Active Recall?"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-[#627267] uppercase mb-1">
+                  <label className="block text-[10px] font-bold text-[#6b5a80] uppercase mb-1">
                     Back / Answer Explanation *
                   </label>
                   <textarea
                     value={newCardBack}
                     onChange={(e) => setNewCardBack(e.target.value)}
-                    className="w-full h-16 px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34] resize-none font-serif"
+                    className="w-full h-16 px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34] resize-none font-serif"
                     placeholder="e.g. Active retrieval testing."
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-[#627267] uppercase mb-1">
+                <label className="block text-[10px] font-bold text-[#6b5a80] uppercase mb-1">
                   Source Reference Citation
                 </label>
                 <input
                   type="text"
                   value={newCardCitation}
                   onChange={(e) => setNewCardCitation(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34] font-serif"
+                  className="w-full px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34] font-serif"
                   placeholder="e.g. Page 45"
                 />
               </div>
@@ -898,13 +898,13 @@ export default function FlashcardsPage() {
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowAddCardInline(false)}
-                  className="px-4 py-1.5 border border-[#d2d9d1] hover:bg-[#f1f3f0] text-xs font-semibold rounded-[10px] transition-standard cursor-pointer"
+                  className="px-4 py-1.5 border border-[#cfc0e0] hover:bg-[#f1ecf8] text-xs font-semibold rounded-[10px] transition-standard cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddManualCard}
-                  className="px-4 py-1.5 bg-[#3d645a] hover:bg-[#2d4a43] text-white text-xs font-semibold rounded-[10px] transition-standard cursor-pointer shadow-xs"
+                  className="px-4 py-1.5 bg-[#5b21b6] hover:bg-[#4c1d95] text-white text-xs font-semibold rounded-[10px] transition-standard cursor-pointer shadow-xs"
                 >
                   Create Card
                 </button>
@@ -914,13 +914,13 @@ export default function FlashcardsPage() {
 
           {/* Empty Desk */}
           {flashcards.length === 0 && !loading && (
-            <div className="h-[460px] border border-dashed border-[#e4e2db] rounded-[12px] flex flex-col items-center justify-center text-center p-8 bg-[#fdfdfd] shadow-xs">
-              <div className="w-14 h-14 rounded-full bg-[#f5f4f0] flex items-center justify-center mb-4 text-[#3d645a] border border-[#e4e2db]">
+            <div className="h-[460px] border border-dashed border-[#e0d4f0] rounded-[12px] flex flex-col items-center justify-center text-center p-8 bg-[#fdfcff] shadow-xs">
+              <div className="w-14 h-14 rounded-full bg-[#f3eff8] flex items-center justify-center mb-4 text-[#5b21b6] border border-[#e0d4f0]">
                 <Layers className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-[#1b2b24] font-serif">Notebook Study Guide</h3>
-              <p className="text-sm text-[#627267] max-w-sm font-serif italic mt-2">
-                Check study documents on the left, then click <strong className="text-[#3d645a]">"Generate Flashcards"</strong> or add files/notes to review.
+              <h3 className="text-xl font-bold text-[#2d1055] font-serif">Notebook Study Guide</h3>
+              <p className="text-sm text-[#6b5a80] max-w-sm font-serif italic mt-2">
+                Check study documents on the left, then click <strong className="text-[#5b21b6]">"Generate Flashcards"</strong> or add files/notes to review.
               </p>
               
               <div className="flex gap-3 mt-6">
@@ -934,7 +934,7 @@ export default function FlashcardsPage() {
                     setUploadError("");
                     setIsSourceModalOpen(true);
                   }}
-                  className="px-5 py-2.5 bg-[#3d645a] hover:bg-[#2d4a43] text-white font-semibold rounded-[10px] text-xs transition-standard cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  className="px-5 py-2.5 bg-[#5b21b6] hover:bg-[#4c1d95] text-white font-semibold rounded-[10px] text-xs transition-standard cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
                   <Upload className="w-4 h-4" />
                   Upload Document (PDF/Text)
@@ -943,7 +943,7 @@ export default function FlashcardsPage() {
                 {selectedSourceIds.length > 0 && (
                   <button
                     onClick={handleGenerate}
-                    className="px-5 py-2.5 bg-[#ebeae4] hover:bg-[#e0dfd8] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer flex items-center gap-1.5"
+                    className="px-5 py-2.5 bg-[#e8e0f2] hover:bg-[#e0daf0] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer flex items-center gap-1.5"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     Generate ({selectedSourceIds.length} active)
@@ -955,10 +955,10 @@ export default function FlashcardsPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="h-[460px] border border-[#e4e2db] rounded-[12px] bg-white flex flex-col items-center justify-center text-center p-8 shadow-xs">
-              <Loader2 className="w-10 h-10 text-[#3d645a] animate-spin mb-4" />
-              <h3 className="text-lg font-bold text-[#1b2b24] font-serif">Deconstructing Materials</h3>
-              <p className="text-sm text-[#627267] max-w-xs font-serif italic mt-1.5 leading-relaxed">
+            <div className="h-[460px] border border-[#e0d4f0] rounded-[12px] bg-white flex flex-col items-center justify-center text-center p-8 shadow-xs">
+              <Loader2 className="w-10 h-10 text-[#5b21b6] animate-spin mb-4" />
+              <h3 className="text-lg font-bold text-[#2d1055] font-serif">Deconstructing Materials</h3>
+              <p className="text-sm text-[#6b5a80] max-w-xs font-serif italic mt-1.5 leading-relaxed">
                 Reading documents, extracting concepts, and mapping citations...
               </p>
             </div>
@@ -969,12 +969,12 @@ export default function FlashcardsPage() {
             <div className="space-y-5">
               
               {/* Tab toggles */}
-              <div className="flex flex-col sm:flex-row items-center justify-between border-b border-[#e4e2db] pb-2 gap-3">
-                <div className="flex items-center gap-1.5 bg-[#ebeae4]/60 p-1 rounded-[10px]">
+              <div className="flex flex-col sm:flex-row items-center justify-between border-b border-[#e0d4f0] pb-2 gap-3">
+                <div className="flex items-center gap-1.5 bg-[#e8e0f2]/60 p-1 rounded-[10px]">
                   <button
                     onClick={() => setActiveView("carousel")}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-[8px] transition-standard cursor-pointer ${
-                      activeView === "carousel" ? "bg-[#3d645a] text-white shadow-xs" : "text-[#627267] hover:text-[#2d3a34]"
+                      activeView === "carousel" ? "bg-[#5b21b6] text-white shadow-xs" : "text-[#6b5a80] hover:text-[#2d3a34]"
                     }`}
                   >
                     <Layers className="w-3.5 h-3.5" />
@@ -983,7 +983,7 @@ export default function FlashcardsPage() {
                   <button
                     onClick={() => setActiveView("grid")}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-[8px] transition-standard cursor-pointer ${
-                      activeView === "grid" ? "bg-[#3d645a] text-white shadow-xs" : "text-[#627267] hover:text-[#2d3a34]"
+                      activeView === "grid" ? "bg-[#5b21b6] text-white shadow-xs" : "text-[#6b5a80] hover:text-[#2d3a34]"
                     }`}
                   >
                     <Grid className="w-3.5 h-3.5" />
@@ -992,7 +992,7 @@ export default function FlashcardsPage() {
                   <button
                     onClick={() => setActiveView("list")}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-[8px] transition-standard cursor-pointer ${
-                      activeView === "list" ? "bg-[#3d645a] text-white shadow-xs" : "text-[#627267] hover:text-[#2d3a34]"
+                      activeView === "list" ? "bg-[#5b21b6] text-white shadow-xs" : "text-[#6b5a80] hover:text-[#2d3a34]"
                     }`}
                   >
                     <List className="w-3.5 h-3.5" />
@@ -1001,11 +1001,11 @@ export default function FlashcardsPage() {
                 </div>
 
                 {/* Progress Indicators */}
-                <div className="flex items-center gap-3 text-xs font-medium text-[#627267]">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-600" /> {masteredCount} Got It</span>
-                  <span className="h-3 w-px bg-[#e4e2db]" />
+                <div className="flex items-center gap-3 text-xs font-medium text-[#6b5a80]">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-600" /> {masteredCount} Got It</span>
+                  <span className="h-3 w-px bg-[#e0d4f0]" />
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> {reviewCount} Reviews</span>
-                  <span className="h-3 w-px bg-[#e4e2db]" />
+                  <span className="h-3 w-px bg-[#e0d4f0]" />
                   <span className="font-semibold text-[#2d3a34]">{Math.round(((masteredCount + reviewCount) / flashcards.length) * 100)}% Complete</span>
                 </div>
               </div>
@@ -1017,57 +1017,57 @@ export default function FlashcardsPage() {
                     <div className="space-y-6">
                       <div className="relative group">
                         {editingCardId === flashcards[currentIndex].id ? (
-                          <div className="w-full h-80 rounded-[12px] border border-[#3d645a] bg-white p-6 space-y-4 shadow-sm">
-                            <h4 className="text-xs font-bold text-[#3d645a] uppercase font-mono border-b border-[#f5f4f0] pb-2">
+                          <div className="w-full h-80 rounded-[12px] border border-[#5b21b6] bg-white p-6 space-y-4 shadow-sm">
+                            <h4 className="text-xs font-bold text-[#5b21b6] uppercase font-mono border-b border-[#f3eff8] pb-2">
                               Edit Flashcard #{currentIndex + 1}
                             </h4>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-[10px] font-bold text-[#627267] uppercase mb-1">
+                                <label className="block text-[10px] font-bold text-[#6b5a80] uppercase mb-1">
                                   Front Prompt
                                 </label>
                                 <input
                                   type="text"
                                   value={editCardFront}
                                   onChange={(e) => setEditCardFront(e.target.value)}
-                                  className="w-full px-3 py-2 bg-[#fcfbfa] border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34] font-sans"
+                                  className="w-full px-3 py-2 bg-[#fdfaff] border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34] font-sans"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[10px] font-bold text-[#627267] uppercase mb-1">
+                                <label className="block text-[10px] font-bold text-[#6b5a80] uppercase mb-1">
                                   Back Answer
                                 </label>
                                 <textarea
                                   value={editCardBack}
                                   onChange={(e) => setEditCardBack(e.target.value)}
-                                  className="w-full h-16 px-3 py-2 bg-[#fcfbfa] border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34] resize-none font-serif leading-relaxed"
+                                  className="w-full h-16 px-3 py-2 bg-[#fdfaff] border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34] resize-none font-serif leading-relaxed"
                                 />
                               </div>
                             </div>
 
                             <div>
-                              <label className="block text-[10px] font-bold text-[#627267] uppercase mb-1">
+                              <label className="block text-[10px] font-bold text-[#6b5a80] uppercase mb-1">
                                 Citation
                               </label>
                               <input
                                 type="text"
                                 value={editCardCitation}
                                 onChange={(e) => setEditCardCitation(e.target.value)}
-                                className="w-full px-3 py-1.5 bg-[#fcfbfa] border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34] font-serif"
+                                className="w-full px-3 py-1.5 bg-[#fdfaff] border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34] font-serif"
                               />
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-1 border-t border-[#f5f4f0]">
+                            <div className="flex justify-end gap-2 pt-1 border-t border-[#f3eff8]">
                               <button
                                 onClick={() => setEditingCardId(null)}
-                                className="px-3.5 py-1.5 border border-[#d2d9d1] text-[#2d3a34] rounded-[10px] text-xs font-semibold hover:bg-[#f5f4f0] transition-standard"
+                                className="px-3.5 py-1.5 border border-[#cfc0e0] text-[#2d3a34] rounded-[10px] text-xs font-semibold hover:bg-[#f3eff8] transition-standard"
                               >
                                 Cancel
                               </button>
                               <button
                                 onClick={handleSaveCardEdit}
-                                className="px-3.5 py-1.5 bg-[#3d645a] text-white rounded-[10px] text-xs font-semibold hover:bg-[#2d4a43] transition-standard shadow-xs"
+                                className="px-3.5 py-1.5 bg-[#5b21b6] text-white rounded-[10px] text-xs font-semibold hover:bg-[#4c1d95] transition-standard shadow-xs"
                               >
                                 Save Card
                               </button>
@@ -1082,50 +1082,50 @@ export default function FlashcardsPage() {
                               isFlipped ? '[transform:rotateY(180deg)]' : ''
                             }`}>
                               
-                              <div className="absolute inset-0 w-full h-full rounded-[12px] border border-[#e4e2db] bg-white p-8 flex flex-col justify-between shadow-xs [backface-visibility:hidden]">
-                                <div className="flex items-center justify-between border-b border-[#f5f4f0] pb-3">
-                                  <span className="text-[10px] font-bold text-[#3d645a] tracking-wider uppercase flex items-center gap-1">
-                                    <Bookmark className="w-3.5 h-3.5 text-[#3d645a]" />
+                              <div className="absolute inset-0 w-full h-full rounded-[12px] border border-[#e0d4f0] bg-white p-8 flex flex-col justify-between shadow-xs [backface-visibility:hidden]">
+                                <div className="flex items-center justify-between border-b border-[#f3eff8] pb-3">
+                                  <span className="text-[10px] font-bold text-[#5b21b6] tracking-wider uppercase flex items-center gap-1">
+                                    <Bookmark className="w-3.5 h-3.5 text-[#5b21b6]" />
                                     Concept Prompt
                                   </span>
                                   
                                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                     <button
                                       onClick={(e) => handleStartEditCard(flashcards[currentIndex], e)}
-                                      className="p-1 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#f5f4f0] rounded-md transition-standard cursor-pointer"
+                                      className="p-1 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#f3eff8] rounded-md transition-standard cursor-pointer"
                                     >
                                       <Edit2 className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                       onClick={(e) => handleDeleteCard(flashcards[currentIndex].id, e)}
-                                      className="p-1 text-[#8c9c91] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
+                                      className="p-1 text-[#8b7a9e] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
-                                    <span className="text-xs text-[#8c9c91] font-mono ml-2">
+                                    <span className="text-xs text-[#8b7a9e] font-mono ml-2">
                                       CARD {currentIndex + 1} OF {flashcards.length}
                                     </span>
                                   </div>
                                 </div>
                                 
                                 <div className="flex-grow flex items-center justify-center py-4">
-                                  <h2 className="text-xl md:text-2xl font-serif font-bold text-[#1b2b24] text-center leading-relaxed max-w-xl">
+                                  <h2 className="text-xl md:text-2xl font-serif font-bold text-[#2d1055] text-center leading-relaxed max-w-xl">
                                     {flashcards[currentIndex].front}
                                   </h2>
                                 </div>
                                 
-                                <div className="text-center text-xs text-[#8c9c91] font-serif italic border-t border-[#f5f4f0] pt-3 flex items-center justify-center gap-1.5">
-                                  <RotateCw className="w-3.5 h-3.5 text-[#3d645a]" /> Click to reveal answer
+                                <div className="text-center text-xs text-[#8b7a9e] font-serif italic border-t border-[#f3eff8] pt-3 flex items-center justify-center gap-1.5">
+                                  <RotateCw className="w-3.5 h-3.5 text-[#5b21b6]" /> Click to reveal answer
                                 </div>
                               </div>
 
-                              <div className="absolute inset-0 w-full h-full rounded-[12px] border border-[#3d645a]/30 bg-[#f9faf8] p-8 flex flex-col justify-between shadow-xs [backface-visibility:hidden] [transform:rotateY(180deg)]">
-                                <div className="flex items-center justify-between border-b border-[#e4ece7] pb-3">
-                                  <span className="text-[10px] font-bold text-[#3d645a] tracking-wider uppercase flex items-center gap-1">
-                                    <CheckCircle className="w-3.5 h-3.5 text-[#3d645a]" />
+                              <div className="absolute inset-0 w-full h-full rounded-[12px] border border-[#5b21b6]/30 bg-[#f5f0fa] p-8 flex flex-col justify-between shadow-xs [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                                <div className="flex items-center justify-between border-b border-[#e0daf0] pb-3">
+                                  <span className="text-[10px] font-bold text-[#5b21b6] tracking-wider uppercase flex items-center gap-1">
+                                    <CheckCircle className="w-3.5 h-3.5 text-[#5b21b6]" />
                                     AI Answer Verification
                                   </span>
-                                  <span className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full uppercase">
+                                  <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full uppercase">
                                     Revealed
                                   </span>
                                 </div>
@@ -1136,8 +1136,8 @@ export default function FlashcardsPage() {
                                   </p>
                                   
                                   {flashcards[currentIndex].citation && (
-                                    <div className="text-left bg-[#f4f3ef] border-l-2 border-[#3d645a] px-3.5 py-2 text-xs text-[#627267] font-serif italic max-w-lg mx-auto rounded-[4px]">
-                                      <strong className="text-[10px] font-bold text-[#3d645a] font-sans block not-italic uppercase mb-0.5">
+                                    <div className="text-left bg-[#f0e8fa] border-l-2 border-[#5b21b6] px-3.5 py-2 text-xs text-[#6b5a80] font-serif italic max-w-lg mx-auto rounded-[4px]">
+                                      <strong className="text-[10px] font-bold text-[#5b21b6] font-sans block not-italic uppercase mb-0.5">
                                         Source Citation Document:
                                       </strong>
                                       "{flashcards[currentIndex].citation}"
@@ -1145,26 +1145,26 @@ export default function FlashcardsPage() {
                                   )}
                                 </div>
                                 
-                                <div className="flex items-center justify-between border-t border-[#e2ece7] pt-3">
+                                <div className="flex items-center justify-between border-t border-[#e0daf0] pt-3">
                                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                     <button
                                       onClick={(e) => handleCopyCard(currentIndex, e)}
-                                      className="text-xs text-[#8c9c91] hover:text-[#3d645a] flex items-center gap-1.5 transition-standard cursor-pointer"
+                                      className="text-xs text-[#8b7a9e] hover:text-[#5b21b6] flex items-center gap-1.5 transition-standard cursor-pointer"
                                     >
-                                      {copiedIndex === currentIndex ? <Check className="w-3.5 h-3.5 text-green-700" /> : <Copy className="w-3.5 h-3.5" />}
+                                      {copiedIndex === currentIndex ? <Check className="w-3.5 h-3.5 text-purple-700" /> : <Copy className="w-3.5 h-3.5" />}
                                       <span>{copiedIndex === currentIndex ? "Copied!" : "Copy"}</span>
                                     </button>
 
                                     <button
                                       onClick={(e) => handlePinCardToNotes(flashcards[currentIndex], currentIndex, e)}
-                                      className="text-xs text-[#8c9c91] hover:text-[#3d645a] flex items-center gap-1.5 transition-standard cursor-pointer"
+                                      className="text-xs text-[#8b7a9e] hover:text-[#5b21b6] flex items-center gap-1.5 transition-standard cursor-pointer"
                                     >
-                                      {pinnedFeedback === currentIndex ? <Check className="w-3.5 h-3.5 text-green-700 animate-bounce" /> : <Pin className="w-3.5 h-3.5" />}
+                                      {pinnedFeedback === currentIndex ? <Check className="w-3.5 h-3.5 text-purple-700 animate-bounce" /> : <Pin className="w-3.5 h-3.5" />}
                                       <span>{pinnedFeedback === currentIndex ? "Pinned!" : "Pin Note"}</span>
                                     </button>
                                   </div>
                                   
-                                  <span className="text-[11px] text-[#627267] italic font-serif">
+                                  <span className="text-[11px] text-[#6b5a80] italic font-serif">
                                     Click card to flip back
                                   </span>
                                 </div>
@@ -1180,14 +1180,14 @@ export default function FlashcardsPage() {
                           <button
                             onClick={handlePrev}
                             disabled={currentIndex === 0}
-                            className="p-2.5 border border-[#d2d9d1] rounded-[10px] text-[#3d645a] hover:bg-[#f1f3f0] disabled:opacity-40 disabled:hover:bg-transparent transition-standard"
+                            className="p-2.5 border border-[#cfc0e0] rounded-[10px] text-[#5b21b6] hover:bg-[#f1ecf8] disabled:opacity-40 disabled:hover:bg-transparent transition-standard"
                           >
                             <ArrowLeft className="w-5 h-5" />
                           </button>
                           
                           <button
                             onClick={() => setIsFlipped(!isFlipped)}
-                            className="px-5 py-2.5 border border-[#3d645a] hover:bg-[#f1f3f0] text-[#3d645a] font-semibold rounded-[10px] text-xs transition-standard"
+                            className="px-5 py-2.5 border border-[#5b21b6] hover:bg-[#f1ecf8] text-[#5b21b6] font-semibold rounded-[10px] text-xs transition-standard"
                           >
                             Flip Card (Space)
                           </button>
@@ -1195,7 +1195,7 @@ export default function FlashcardsPage() {
                           <button
                             onClick={handleNext}
                             disabled={currentIndex === flashcards.length - 1}
-                            className="p-2.5 border border-[#d2d9d1] rounded-[10px] text-[#3d645a] hover:bg-[#f1f3f0] disabled:opacity-40 disabled:hover:bg-transparent transition-standard"
+                            className="p-2.5 border border-[#cfc0e0] rounded-[10px] text-[#5b21b6] hover:bg-[#f1ecf8] disabled:opacity-40 disabled:hover:bg-transparent transition-standard"
                           >
                             <ArrowRight className="w-5 h-5" />
                           </button>
@@ -1204,7 +1204,7 @@ export default function FlashcardsPage() {
                         <div className="flex items-center gap-2.5">
                           <button
                             onClick={() => handleSetStatus("review")}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#eedebb] bg-[#fdf9f2] hover:bg-[#f5ebd7] text-[#967c47] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#eedebb] bg-[#fdf9f2] hover:bg-[#f5ebd7] text-[#7c3aed] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer"
                           >
                             <XCircle className="w-4 h-4" />
                             Still Learning (1)
@@ -1212,7 +1212,7 @@ export default function FlashcardsPage() {
                           
                           <button
                             onClick={() => handleSetStatus("mastered")}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3d645a] hover:bg-[#2d4a43] text-white font-semibold rounded-[10px] text-xs transition-standard cursor-pointer shadow-xs"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#5b21b6] hover:bg-[#4c1d95] text-white font-semibold rounded-[10px] text-xs transition-standard cursor-pointer shadow-xs"
                           >
                             <CheckCircle className="w-4 h-4" />
                             Got It! (2)
@@ -1220,9 +1220,9 @@ export default function FlashcardsPage() {
                         </div>
                       </div>
 
-                      <div className="bg-[#f5f4f0] border border-[#e4e2db] rounded-[10px] px-4 py-2.5 flex items-center justify-between text-[11px] text-[#627267] font-serif">
+                      <div className="bg-[#f3eff8] border border-[#e0d4f0] rounded-[10px] px-4 py-2.5 flex items-center justify-between text-[11px] text-[#6b5a80] font-serif">
                         <div className="flex items-center gap-1.5">
-                          <Info className="w-3.5 h-3.5 text-[#3d645a]" />
+                          <Info className="w-3.5 h-3.5 text-[#5b21b6]" />
                           <span>Keyboard controls active.</span>
                         </div>
                         <div className="flex items-center gap-4 font-sans text-[10px] tracking-wider uppercase font-semibold">
@@ -1242,8 +1242,8 @@ export default function FlashcardsPage() {
                         const isCardFlipped = gridFlippedState[idx] || false;
                         const cardStatus = card.status || "unseen";
                         
-                        let statusColor = "bg-[#ebeae4] text-[#627267]";
-                        if (cardStatus === "mastered") statusColor = "bg-green-100 text-green-800";
+                        let statusColor = "bg-[#e8e0f2] text-[#6b5a80]";
+                        if (cardStatus === "mastered") statusColor = "bg-purple-100 text-purple-800";
                         if (cardStatus === "review") statusColor = "bg-amber-100 text-amber-800";
 
                         return (
@@ -1256,58 +1256,58 @@ export default function FlashcardsPage() {
                               isCardFlipped ? '[transform:rotateY(180deg)]' : ''
                             }`}>
                               
-                              <div className="absolute inset-0 w-full h-full rounded-[10px] border border-[#e4e2db] bg-white p-5 flex flex-col justify-between shadow-xs [backface-visibility:hidden]">
-                                <div className="flex justify-between items-center border-b border-[#f5f4f0] pb-2" onClick={(e) => e.stopPropagation()}>
-                                  <span className="text-[10px] font-mono text-[#8c9c91]">
+                              <div className="absolute inset-0 w-full h-full rounded-[10px] border border-[#e0d4f0] bg-white p-5 flex flex-col justify-between shadow-xs [backface-visibility:hidden]">
+                                <div className="flex justify-between items-center border-b border-[#f3eff8] pb-2" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-[10px] font-mono text-[#8b7a9e]">
                                     CARD {idx + 1}
                                   </span>
                                   <div className="flex items-center gap-1">
                                     <button
                                       onClick={(e) => handleStartEditCard(card, e)}
-                                      className="p-1 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#f5f4f0] rounded"
+                                      className="p-1 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#f3eff8] rounded"
                                     >
                                       <Edit2 className="w-3 h-3" />
                                     </button>
                                     <button
                                       onClick={(e) => handleDeleteCard(card.id, e)}
-                                      className="p-1 text-[#8c9c91] hover:text-red-600 hover:bg-red-50 rounded"
+                                      className="p-1 text-[#8b7a9e] hover:text-red-600 hover:bg-red-50 rounded"
                                     >
                                       <Trash2 className="w-3 h-3" />
                                     </button>
                                   </div>
                                 </div>
                                 <div className="flex-grow flex items-center justify-center py-2">
-                                  <h4 className="text-sm font-bold text-[#1b2b24] text-center font-serif leading-snug line-clamp-3">
+                                  <h4 className="text-sm font-bold text-[#2d1055] text-center font-serif leading-snug line-clamp-3">
                                     {card.front}
                                   </h4>
                                 </div>
-                                <div className="flex items-center justify-between pt-1.5 border-t border-[#f5f4f0]">
+                                <div className="flex items-center justify-between pt-1.5 border-t border-[#f3eff8]">
                                   <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${statusColor}`}>
                                     {cardStatus}
                                   </span>
-                                  <span className="text-[10px] text-[#8c9c91] italic font-serif flex items-center gap-1">
-                                    <RotateCw className="w-3 h-3 text-[#3d645a]" /> Flip
+                                  <span className="text-[10px] text-[#8b7a9e] italic font-serif flex items-center gap-1">
+                                    <RotateCw className="w-3 h-3 text-[#5b21b6]" /> Flip
                                   </span>
                                 </div>
                               </div>
 
-                              <div className="absolute inset-0 w-full h-full rounded-[10px] border border-[#3d645a]/20 bg-[#fbfbfa] p-5 flex flex-col justify-between shadow-xs [backface-visibility:hidden] [transform:rotateY(180deg)]">
-                                <div className="flex justify-between items-center border-b border-[#e4ece7] pb-2" onClick={(e) => e.stopPropagation()}>
-                                  <span className="text-[10px] font-bold text-[#3d645a] uppercase">
+                              <div className="absolute inset-0 w-full h-full rounded-[10px] border border-[#5b21b6]/20 bg-[#fbfbfa] p-5 flex flex-col justify-between shadow-xs [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                                <div className="flex justify-between items-center border-b border-[#e0daf0] pb-2" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-[10px] font-bold text-[#5b21b6] uppercase">
                                     Answer Description
                                   </span>
                                   <div className="flex items-center gap-1">
                                     <button
                                       onClick={(e) => handleCopyCard(idx, e)}
-                                      className="p-1 text-[#8c9c91] hover:text-[#3d645a] rounded"
+                                      className="p-1 text-[#8b7a9e] hover:text-[#5b21b6] rounded"
                                     >
-                                      {copiedIndex === idx ? <Check className="w-3 h-3 text-green-700" /> : <Copy className="w-3 h-3" />}
+                                      {copiedIndex === idx ? <Check className="w-3 h-3 text-purple-700" /> : <Copy className="w-3 h-3" />}
                                     </button>
                                     <button
                                       onClick={(e) => handlePinCardToNotes(card, idx, e)}
-                                      className="p-1 text-[#8c9c91] hover:text-[#3d645a] rounded"
+                                      className="p-1 text-[#8b7a9e] hover:text-[#5b21b6] rounded"
                                     >
-                                      {pinnedFeedback === idx ? <Check className="w-3 h-3 text-green-700" /> : <Pin className="w-3 h-3" />}
+                                      {pinnedFeedback === idx ? <Check className="w-3 h-3 text-purple-700" /> : <Pin className="w-3 h-3" />}
                                     </button>
                                   </div>
                                 </div>
@@ -1316,7 +1316,7 @@ export default function FlashcardsPage() {
                                     {card.back}
                                   </p>
                                 </div>
-                                <div className="text-center text-[10px] text-[#8c9c91] italic font-serif pt-1.5 border-t border-[#e2ece7]">
+                                <div className="text-center text-[10px] text-[#8b7a9e] italic font-serif pt-1.5 border-t border-[#e0daf0]">
                                   Click to flip back
                                 </div>
                               </div>
@@ -1330,43 +1330,43 @@ export default function FlashcardsPage() {
 
                   {/* LIST */}
                   {activeView === "list" && (
-                    <div className="bg-white border border-[#e4e2db] rounded-[12px] overflow-hidden divide-y divide-[#e4e2db] shadow-xs">
+                    <div className="bg-white border border-[#e0d4f0] rounded-[12px] overflow-hidden divide-y divide-[#e0d4f0] shadow-xs">
                       {flashcards.map((card, idx) => (
-                        <div key={idx} className="p-5 hover:bg-[#fcfbfa] transition-standard space-y-2.5 relative group">
+                        <div key={idx} className="p-5 hover:bg-[#fdfaff] transition-standard space-y-2.5 relative group">
                           <div className="absolute right-4 top-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-standard">
                             <button
                               onClick={(e) => handleStartEditCard(card, e)}
-                              className="p-1.5 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#f5f4f0] rounded-md transition-standard cursor-pointer"
+                              className="p-1.5 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#f3eff8] rounded-md transition-standard cursor-pointer"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={(e) => handleCopyCard(idx, e)}
-                              className="p-1.5 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#f5f4f0] rounded-md transition-standard cursor-pointer"
+                              className="p-1.5 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#f3eff8] rounded-md transition-standard cursor-pointer"
                             >
-                              {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-green-700" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-purple-700" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                             <button
                               onClick={(e) => handlePinCardToNotes(card, idx, e)}
-                              className="p-1.5 text-[#8c9c91] hover:text-[#3d645a] hover:bg-[#f5f4f0] rounded-md transition-standard cursor-pointer"
+                              className="p-1.5 text-[#8b7a9e] hover:text-[#5b21b6] hover:bg-[#f3eff8] rounded-md transition-standard cursor-pointer"
                             >
-                              {pinnedFeedback === idx ? <Check className="w-3.5 h-3.5 text-green-700" /> : <Pin className="w-3.5 h-3.5" />}
+                              {pinnedFeedback === idx ? <Check className="w-3.5 h-3.5 text-purple-700" /> : <Pin className="w-3.5 h-3.5" />}
                             </button>
                             <button
                               onClick={(e) => handleDeleteCard(card.id, e)}
-                              className="p-1.5 text-[#8c9c91] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
+                              className="p-1.5 text-[#8b7a9e] hover:text-red-600 hover:bg-red-50 rounded-md transition-standard cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="bg-[#ebeae4] text-[#2d3a34] text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+                            <span className="bg-[#e8e0f2] text-[#2d3a34] text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
                               CONCEPT {idx + 1}
                             </span>
                             {card.status && card.status !== "unseen" && (
                               <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                                card.status === "mastered" ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
+                                card.status === "mastered" ? "bg-purple-50 text-purple-700" : "bg-amber-50 text-amber-700"
                               }`}>
                                 {card.status}
                               </span>
@@ -1374,14 +1374,14 @@ export default function FlashcardsPage() {
                           </div>
                           
                           <div className="space-y-1.5">
-                            <h4 className="text-sm font-bold text-[#1b2b24] font-serif leading-snug pr-24">
+                            <h4 className="text-sm font-bold text-[#2d1055] font-serif leading-snug pr-24">
                               Q: {card.front}
                             </h4>
-                            <p className="text-xs text-[#2d3a34] font-serif leading-relaxed pl-4 border-l border-[#d2d9d1]">
+                            <p className="text-xs text-[#2d3a34] font-serif leading-relaxed pl-4 border-l border-[#cfc0e0]">
                               A: {card.back}
                             </p>
                             {card.citation && (
-                              <p className="text-[10.5px] text-[#627267] font-serif leading-relaxed pl-4 italic opacity-85">
+                              <p className="text-[10.5px] text-[#6b5a80] font-serif leading-relaxed pl-4 italic opacity-85">
                                 Citation: "{card.citation}"
                               </p>
                             )}
@@ -1394,7 +1394,7 @@ export default function FlashcardsPage() {
                   <div className="flex justify-end pt-2">
                     <button
                       onClick={() => setShowSummary(true)}
-                      className="px-5 py-2.5 bg-[#ebeae4] hover:bg-[#e0dfd8] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard flex items-center gap-1.5 shadow-xs"
+                      className="px-5 py-2.5 bg-[#e8e0f2] hover:bg-[#e0daf0] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard flex items-center gap-1.5 shadow-xs"
                     >
                       Finish Session & See Report
                       <ChevronRight className="w-4 h-4" />
@@ -1403,61 +1403,61 @@ export default function FlashcardsPage() {
                 </>
               ) : (
                 /* SUMMARY */
-                <div className="bg-white border border-[#e4e2db] rounded-[12px] p-8 shadow-xs text-center space-y-6">
+                <div className="bg-white border border-[#e0d4f0] rounded-[12px] p-8 shadow-xs text-center space-y-6">
                   <div className="max-w-md mx-auto space-y-2">
-                    <div className="w-14 h-14 rounded-full bg-[#f2f6f3] border border-[#d2edd7] text-[#3d645a] flex items-center justify-center mx-auto text-xl font-bold">
+                    <div className="w-14 h-14 rounded-full bg-[#f3edfa] border border-[#d2c0f0] text-[#5b21b6] flex items-center justify-center mx-auto text-xl font-bold">
                       ✓
                     </div>
-                    <h2 className="text-2xl font-bold text-[#1b2b24] font-serif">Study Session Completed!</h2>
-                    <p className="text-sm text-[#627267] font-serif italic">
+                    <h2 className="text-2xl font-bold text-[#2d1055] font-serif">Study Session Completed!</h2>
+                    <p className="text-sm text-[#6b5a80] font-serif italic">
                       Here is your learning progress breakdown:
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 max-w-md mx-auto pt-2">
-                    <div className="bg-[#f2f6f3] border border-[#d2edd7] rounded-[10px] p-4 text-center">
-                      <div className="text-3xl font-extrabold text-[#3d645a]">{masteredCount}</div>
-                      <div className="text-[10px] font-bold text-[#627267] uppercase tracking-wider mt-1">Mastered</div>
+                    <div className="bg-[#f3edfa] border border-[#d2c0f0] rounded-[10px] p-4 text-center">
+                      <div className="text-3xl font-extrabold text-[#5b21b6]">{masteredCount}</div>
+                      <div className="text-[10px] font-bold text-[#6b5a80] uppercase tracking-wider mt-1">Mastered</div>
                     </div>
                     <div className="bg-[#fdf9f2] border border-[#eedebb] rounded-[10px] p-4 text-center">
-                      <div className="text-3xl font-extrabold text-[#967c47]">{reviewCount}</div>
-                      <div className="text-[10px] font-bold text-[#627267] uppercase tracking-wider mt-1">Review Needed</div>
+                      <div className="text-3xl font-extrabold text-[#7c3aed]">{reviewCount}</div>
+                      <div className="text-[10px] font-bold text-[#6b5a80] uppercase tracking-wider mt-1">Review Needed</div>
                     </div>
-                    <div className="bg-[#fcfbfa] border border-[#e4e2db] rounded-[10px] p-4 text-center">
-                      <div className="text-3xl font-extrabold text-[#8c9c91]">{unseenCount}</div>
-                      <div className="text-[10px] font-bold text-[#627267] uppercase tracking-wider mt-1">Unseen</div>
+                    <div className="bg-[#fdfaff] border border-[#e0d4f0] rounded-[10px] p-4 text-center">
+                      <div className="text-3xl font-extrabold text-[#8b7a9e]">{unseenCount}</div>
+                      <div className="text-[10px] font-bold text-[#6b5a80] uppercase tracking-wider mt-1">Unseen</div>
                     </div>
                   </div>
 
                   <div className="max-w-sm mx-auto space-y-2 pt-2">
-                    <div className="flex justify-between items-center text-xs font-semibold text-[#627267]">
+                    <div className="flex justify-between items-center text-xs font-semibold text-[#6b5a80]">
                       <span>Mastery Progress</span>
                       <span>{Math.round((masteredCount / flashcards.length) * 100)}% Mastered</span>
                     </div>
-                    <div className="w-full bg-[#ebeae4] h-2.5 rounded-full overflow-hidden flex">
-                      <div className="h-full bg-[#3d645a]" style={{ width: `${(masteredCount / flashcards.length) * 100}%` }} />
-                      <div className="h-full bg-[#d3c09e]" style={{ width: `${(reviewCount / flashcards.length) * 100}%` }} />
+                    <div className="w-full bg-[#e8e0f2] h-2.5 rounded-full overflow-hidden flex">
+                      <div className="h-full bg-[#5b21b6]" style={{ width: `${(masteredCount / flashcards.length) * 100}%` }} />
+                      <div className="h-full bg-[#c4a8f0]" style={{ width: `${(reviewCount / flashcards.length) * 100}%` }} />
                     </div>
                   </div>
 
-                  <div className="flex justify-center gap-3 pt-6 border-t border-[#f5f4f0] mt-6">
+                  <div className="flex justify-center gap-3 pt-6 border-t border-[#f3eff8] mt-6">
                     <button
                       onClick={handleRestart}
-                      className="px-5 py-2.5 border border-[#3d645a] hover:bg-[#f1f3f0] text-[#3d645a] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer"
+                      className="px-5 py-2.5 border border-[#5b21b6] hover:bg-[#f1ecf8] text-[#5b21b6] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer"
                     >
                       Study Deck Again
                     </button>
                     {reviewCount > 0 && (
                       <button
                         onClick={handleRestudyReviews}
-                        className="px-5 py-2.5 bg-[#3d645a] hover:bg-[#2d4a43] text-white font-semibold rounded-[10px] text-xs transition-standard shadow-xs"
+                        className="px-5 py-2.5 bg-[#5b21b6] hover:bg-[#4c1d95] text-white font-semibold rounded-[10px] text-xs transition-standard shadow-xs"
                       >
                         Study Review Cards ({reviewCount})
                       </button>
                     )}
                     <button
                       onClick={handleClearDeck}
-                      className="px-5 py-2.5 bg-[#ebeae4] hover:bg-[#e0dfd8] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer"
+                      className="px-5 py-2.5 bg-[#e8e0f2] hover:bg-[#e0daf0] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard cursor-pointer"
                     >
                       Select New Sources
                     </button>
@@ -1475,10 +1475,10 @@ export default function FlashcardsPage() {
       {/* Add/Edit Source Modal */}
       {isSourceModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-[#fcfbfa] border border-[#e4e2db] rounded-[12px] p-6 max-w-lg w-full shadow-lg space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-[#e4e2db] pb-3">
-              <h3 className="text-lg font-bold text-[#1b2b24] font-serif flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#3d645a]" />
+          <div className="bg-[#fdfaff] border border-[#e0d4f0] rounded-[12px] p-6 max-w-lg w-full shadow-lg space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-[#e0d4f0] pb-3">
+              <h3 className="text-lg font-bold text-[#2d1055] font-serif flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#5b21b6]" />
                 {modalSourceId ? "Edit Source Document" : "Add Source Document"}
               </h3>
               <button
@@ -1488,7 +1488,7 @@ export default function FlashcardsPage() {
                   setModalContent("");
                   setModalSourceId(null);
                 }}
-                className="text-xs text-[#8c9c91] hover:text-[#2d3a34] font-semibold"
+                className="text-xs text-[#8b7a9e] hover:text-[#2d3a34] font-semibold"
               >
                 Close
               </button>
@@ -1496,11 +1496,11 @@ export default function FlashcardsPage() {
 
             {/* Modal Tabs for Manual Input vs Upload File */}
             {!modalSourceId && (
-              <div className="flex gap-1 bg-[#ebeae4]/60 p-1 rounded-[10px]">
+              <div className="flex gap-1 bg-[#e8e0f2]/60 p-1 rounded-[10px]">
                 <button
                   onClick={() => setModalTab("text")}
                   className={`flex-1 py-1.5 text-center text-xs font-semibold rounded-[8px] transition-standard ${
-                    modalTab === "text" ? "bg-[#3d645a] text-white shadow-xs" : "text-[#627267] hover:text-[#2d3a34]"
+                    modalTab === "text" ? "bg-[#5b21b6] text-white shadow-xs" : "text-[#6b5a80] hover:text-[#2d3a34]"
                   }`}
                 >
                   Write / Paste Text
@@ -1508,7 +1508,7 @@ export default function FlashcardsPage() {
                 <button
                   onClick={() => setModalTab("upload")}
                   className={`flex-1 py-1.5 text-center text-xs font-semibold rounded-[8px] transition-standard ${
-                    modalTab === "upload" ? "bg-[#3d645a] text-white shadow-xs" : "text-[#627267] hover:text-[#2d3a34]"
+                    modalTab === "upload" ? "bg-[#5b21b6] text-white shadow-xs" : "text-[#6b5a80] hover:text-[#2d3a34]"
                   }`}
                 >
                   Upload File
@@ -1527,26 +1527,26 @@ export default function FlashcardsPage() {
             {modalTab === "text" && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#627267] mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs font-semibold text-[#6b5a80] mb-1.5 uppercase tracking-wider">
                     Document Title *
                   </label>
                   <input
                     type="text"
                     value={modalTitle}
                     onChange={(e) => setModalTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34]"
+                    className="w-full px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34]"
                     placeholder="e.g. Photosynthesis Notes"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#627267] mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs font-semibold text-[#6b5a80] mb-1.5 uppercase tracking-wider">
                     Document Content *
                   </label>
                   <textarea
                     value={modalContent}
                     onChange={(e) => setModalContent(e.target.value)}
-                    className="w-full h-44 px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] resize-none text-[#2d3a34] font-serif leading-relaxed"
+                    className="w-full h-44 px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] resize-none text-[#2d3a34] font-serif leading-relaxed"
                     placeholder="Paste details or notes..."
                   />
                 </div>
@@ -1555,22 +1555,22 @@ export default function FlashcardsPage() {
 
             {/* TAB B: File Upload */}
             {modalTab === "upload" && (
-              <div className="py-6 flex flex-col items-center justify-center border-2 border-dashed border-[#d2d9d1] rounded-[12px] bg-white transition-standard hover:bg-[#fcfbfa]/50 text-center p-6 relative">
+              <div className="py-6 flex flex-col items-center justify-center border-2 border-dashed border-[#cfc0e0] rounded-[12px] bg-white transition-standard hover:bg-[#fdfaff]/50 text-center p-6 relative">
                 {fileLoading ? (
                   <div className="flex flex-col items-center gap-3">
-                    <Loader2 className="w-8 h-8 text-[#3d645a] animate-spin" />
-                    <p className="text-xs font-serif text-[#627267] italic animate-pulse">
+                    <Loader2 className="w-8 h-8 text-[#5b21b6] animate-spin" />
+                    <p className="text-xs font-serif text-[#6b5a80] italic animate-pulse">
                       Parsing document text...
                     </p>
                   </div>
                 ) : (
                   <>
-                    <Upload className="w-10 h-10 text-[#8c9c91] mb-2" />
+                    <Upload className="w-10 h-10 text-[#8b7a9e] mb-2" />
                     <p className="text-xs font-bold text-[#2d3a34]">
                       Select study document
                     </p>
-                    <p className="text-[10px] text-[#627267] mt-1 font-serif max-w-xs leading-normal">
-                      Drag and drop your file here, or click to browse. Supports <strong className="text-[#3d645a]">PDF, TXT, and Markdown (.md)</strong>.
+                    <p className="text-[10px] text-[#6b5a80] mt-1 font-serif max-w-xs leading-normal">
+                      Drag and drop your file here, or click to browse. Supports <strong className="text-[#5b21b6]">PDF, TXT, and Markdown (.md)</strong>.
                     </p>
                     <input
                       type="file"
@@ -1583,7 +1583,7 @@ export default function FlashcardsPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e4e2db]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e0d4f0]">
               <button
                 onClick={() => {
                   setIsSourceModalOpen(false);
@@ -1591,7 +1591,7 @@ export default function FlashcardsPage() {
                   setModalContent("");
                   setModalSourceId(null);
                 }}
-                className="px-4 py-2 border border-[#d2d9d1] hover:bg-[#f1f3f0] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard"
+                className="px-4 py-2 border border-[#cfc0e0] hover:bg-[#f1ecf8] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard"
               >
                 Cancel
               </button>
@@ -1599,7 +1599,7 @@ export default function FlashcardsPage() {
               <button
                 onClick={handleSaveSource}
                 disabled={modalTab !== "text" || !modalTitle.trim() || !modalContent.trim()}
-                className="px-4 py-2 bg-[#3d645a] hover:bg-[#2d4a43] disabled:opacity-50 text-white font-semibold rounded-[10px] text-xs transition-standard shadow-xs"
+                className="px-4 py-2 bg-[#5b21b6] hover:bg-[#4c1d95] disabled:opacity-50 text-white font-semibold rounded-[10px] text-xs transition-standard shadow-xs"
               >
                 {modalSourceId ? "Save Changes" : "Add to Notebook"}
               </button>
@@ -1611,10 +1611,10 @@ export default function FlashcardsPage() {
       {/* Written Note CRUD Modal */}
       {isNoteModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-[#fcfbfa] border border-[#e4e2db] rounded-[12px] p-6 max-w-lg w-full shadow-lg space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-[#e4e2db] pb-3">
-              <h3 className="text-lg font-bold text-[#1b2b24] font-serif flex items-center gap-2">
-                <Bookmark className="w-5 h-5 text-[#3d645a]" />
+          <div className="bg-[#fdfaff] border border-[#e0d4f0] rounded-[12px] p-6 max-w-lg w-full shadow-lg space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-[#e0d4f0] pb-3">
+              <h3 className="text-lg font-bold text-[#2d1055] font-serif flex items-center gap-2">
+                <Bookmark className="w-5 h-5 text-[#5b21b6]" />
                 {modalNoteId ? "Edit Study Note" : "Write Custom Note"}
               </h3>
               <button
@@ -1624,7 +1624,7 @@ export default function FlashcardsPage() {
                   setNoteModalContent("");
                   setModalNoteId(null);
                 }}
-                className="text-xs text-[#8c9c91] hover:text-[#2d3a34] font-semibold"
+                className="text-xs text-[#8b7a9e] hover:text-[#2d3a34] font-semibold"
               >
                 Close
               </button>
@@ -1632,34 +1632,34 @@ export default function FlashcardsPage() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#627267] mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-[#6b5a80] mb-1.5 uppercase tracking-wider">
                   Note Title *
                 </label>
                 <input
                   type="text"
                   value={noteModalTitle}
                   onChange={(e) => setNoteModalTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] text-[#2d3a34]"
+                  className="w-full px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] text-[#2d3a34]"
                   placeholder="e.g. Summary points"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#627267] mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-[#6b5a80] mb-1.5 uppercase tracking-wider">
                   Note Content *
                 </label>
                 <textarea
                   value={noteModalContent}
                   onChange={(e) => setNoteModalContent(e.target.value)}
-                  className="w-full h-44 px-3 py-2 bg-white border border-[#d2d9d1] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#3d645a] resize-none text-[#2d3a34] font-serif leading-relaxed"
+                  className="w-full h-44 px-3 py-2 bg-white border border-[#cfc0e0] rounded-[10px] text-xs focus:outline-none focus:ring-2 focus:ring-[#5b21b6] resize-none text-[#2d3a34] font-serif leading-relaxed"
                   placeholder="Write note details..."
                   required
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e4e2db]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e0d4f0]">
               <button
                 onClick={() => {
                   setIsNoteModalOpen(false);
@@ -1667,14 +1667,14 @@ export default function FlashcardsPage() {
                   setNoteModalContent("");
                   setModalNoteId(null);
                 }}
-                className="px-4 py-2 border border-[#d2d9d1] hover:bg-[#f1f3f0] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard"
+                className="px-4 py-2 border border-[#cfc0e0] hover:bg-[#f1ecf8] text-[#2d3a34] font-semibold rounded-[10px] text-xs transition-standard"
               >
                 Cancel
               </button>
               
               <button
                 onClick={handleSaveNote}
-                className="px-4 py-2 bg-[#3d645a] hover:bg-[#2d4a43] text-white font-semibold rounded-[10px] text-xs transition-standard shadow-xs"
+                className="px-4 py-2 bg-[#5b21b6] hover:bg-[#4c1d95] text-white font-semibold rounded-[10px] text-xs transition-standard shadow-xs"
               >
                 {modalNoteId ? "Save Note" : "Create Note"}
               </button>

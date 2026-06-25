@@ -50,6 +50,25 @@ export function useCanvasEngine() {
   ]);
   const [activeLayerId, setActiveLayerId] = useState<string>('default');
 
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null);
+
+  const showToast = useCallback((message: string, type: 'error' | 'success' | 'info' = 'info') => {
+    setToast({ message, type });
+  }, []);
+
+  const clearToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   // Inline text editing state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -119,6 +138,25 @@ export function useCanvasEngine() {
     setSelectedIds([]);
   }, [selectedIds, pushHistory]);
 
+  const duplicateSelected = useCallback(() => {
+    if (selectedIds.length === 0) return;
+    const OFFSET = 20;
+    setShapes(prev => {
+      const toDuplicate = prev.filter(s => selectedIds.includes(s.id));
+      const newShapes = toDuplicate.map(s => ({
+        ...s,
+        id: genId(),
+        x: s.x + OFFSET,
+        y: s.y + OFFSET,
+        groupId: null,
+      }));
+      const updated = [...prev, ...newShapes];
+      pushHistory(updated);
+      setSelectedIds(newShapes.map(s => s.id));
+      return updated;
+    });
+  }, [selectedIds, pushHistory]);
+
   // Grouping methods
   const groupSelected = useCallback(() => {
     if (selectedIds.length < 2) return;
@@ -157,7 +195,8 @@ export function useCanvasEngine() {
   // Layers management
   const addLayer = useCallback((name?: string) => {
     const id = genId();
-    setLayers(prev => [...prev, { id, name: name || `Layer ${prev.length + 1}`, visible: true, locked: false }]);
+    const layerName = (typeof name === 'string' && name.trim()) ? name.trim() : `Layer ${layersRef.current.length + 1}`;
+    setLayers(prev => [...prev, { id, name: layerName, visible: true, locked: false }]);
     setActiveLayerId(id);
   }, []);
 
@@ -190,6 +229,19 @@ export function useCanvasEngine() {
 
   const reorderLayers = useCallback((newLayers: Layer[]) => {
     setLayers(newLayers);
+  }, []);
+
+  const setLayersSanitized = useCallback((val: Layer[] | ((prev: Layer[]) => Layer[])) => {
+    setLayers(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      if (!Array.isArray(next)) return prev;
+      return next.map((l, idx) => ({
+        id: l.id || genId(),
+        name: (l && l.name && typeof l.name === 'string') ? l.name : `Layer ${idx + 1}`,
+        visible: typeof l.visible === 'boolean' ? l.visible : true,
+        locked: typeof l.locked === 'boolean' ? l.locked : false,
+      }));
+    });
   }, []);
 
   // Text inline editing completion
@@ -248,6 +300,12 @@ export function useCanvasEngine() {
       else groupSelected();
     }
 
+    // Ctrl+D: Duplicate selected
+    if (e.ctrlKey && e.key === 'd') {
+      e.preventDefault();
+      duplicateSelected();
+    }
+
     if (!e.ctrlKey && !e.altKey) {
       const keyMap: Record<string, ToolId> = {
         v: 'select', p: 'pen', r: 'rect', e: 'ellipse', d: 'diamond',
@@ -256,7 +314,7 @@ export function useCanvasEngine() {
       const keyLower = e.key.toLowerCase();
       if (keyMap[keyLower]) setTool(keyMap[keyLower]);
     }
-  }, [selectedIds, deleteSelected, undo, redo, groupSelected, ungroupSelected]);
+  }, [selectedIds, deleteSelected, undo, redo, groupSelected, ungroupSelected, duplicateSelected]);
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     if (e.code === 'Space') {
@@ -377,7 +435,7 @@ export function useCanvasEngine() {
 
     const activeLayer = layersRef.current.find(l => l.id === activeLayerId);
     if (activeLayer?.locked && tool !== 'select') {
-      alert('Active layer is locked! Unlock it or select another layer to draw.');
+      showToast('Active layer is locked! Unlock it or select another layer to draw.', 'error');
       return;
     }
 
@@ -704,14 +762,16 @@ export function useCanvasEngine() {
     fontSize, setFontSize, cursorPos, zoomPercent,
     canvasRef, undo, redo, addShapes, clearCanvas, deleteSelected,
     onMouseDown, onMouseMove, onMouseUp, onWheel, onDoubleClick,
-    // Multi-Selection and Grouping
-    groupSelected, ungroupSelected,
+    // Multi-Selection, Grouping and Duplication
+    groupSelected, ungroupSelected, duplicateSelected,
     // Layers
-    layers, setLayers, activeLayerId, setActiveLayerId, addLayer, removeLayer,
+    layers, setLayers: setLayersSanitized, activeLayerId, setActiveLayerId, addLayer, removeLayer,
     toggleLayerVisibility, toggleLayerLock, reorderLayers,
     // Inline text editing
     editingId, setEditingId, editingText, setEditingText, finishTextEditing,
     // Image insertion
-    insertImage
+    insertImage,
+    // Toast notification
+    toast, showToast, clearToast
   };
 }

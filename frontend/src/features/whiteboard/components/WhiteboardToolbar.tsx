@@ -7,6 +7,7 @@ import {
   Group, Ungroup, HelpCircle,
 } from 'lucide-react';
 import { ToolId, TOOL_LIST, COLORS } from '../lib/shapes';
+import { memo } from 'react';
 
 interface ToolbarProps {
   tool: ToolId;
@@ -43,7 +44,7 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   image: <ImageIcon className="w-4 h-4" />,
 };
 
-export function WhiteboardToolbar({
+export const WhiteboardToolbar = memo(function WhiteboardToolbar({
   tool, onSetTool, fillColor, onSetFillColor, strokeColor, onSetStrokeColor,
   strokeWidth, onSetStrokeWidth, fontSize, onSetFontSize,
   onUndo, onRedo, onClear, onExportPng, onExportJson, onImportJson,
@@ -183,4 +184,4 @@ export function WhiteboardToolbar({
       </div>
     </div>
   );
-}
+});

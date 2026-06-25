@@ -76,32 +76,32 @@ export function StudyStreakWidget() {
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 rounded-xl p-5 card-hover h-full text-white">
-      <div className="relative">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center">
-            <Flame className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-3xl font-bold tracking-tight">{streak}</p>
-            <p className="text-xs text-white/70">Day Streak</p>
-          </div>
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center shrink-0">
+          <Flame className="w-5 h-5" />
         </div>
+        <h3 className="font-semibold">Study Streak</h3>
+      </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Clock className="w-3.5 h-3.5 text-white/70" />
-              <span className="text-xs text-white/70">Hours</span>
-            </div>
-            <p className="text-lg font-bold">{totalHours}</p>
+      <div className="text-center mb-4">
+        <p className="text-4xl font-bold tracking-tight">{streak}</p>
+        <p className="text-xs text-white/70 mt-0.5">Day Streak</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white/10 rounded-lg p-3 text-center">
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <Clock className="w-3.5 h-3.5 text-white/70" />
+            <span className="text-xs text-white/70">Hours</span>
           </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <CheckCircle className="w-3.5 h-3.5 text-white/70" />
-              <span className="text-xs text-white/70">Tasks</span>
-            </div>
-            <p className="text-lg font-bold">{totalFinished}</p>
+          <p className="text-lg font-bold">{totalHours}</p>
+        </div>
+        <div className="bg-white/10 rounded-lg p-3 text-center">
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <CheckCircle className="w-3.5 h-3.5 text-white/70" />
+            <span className="text-xs text-white/70">Tasks</span>
           </div>
+          <p className="text-lg font-bold">{totalFinished}</p>
         </div>
       </div>
     </div>
