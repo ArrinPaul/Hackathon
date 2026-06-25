@@ -2,7 +2,7 @@
   "name": "campusflow-root",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "scripts": {
     "postinstall": "npm --prefix backend install",
