@@ -17,6 +17,7 @@ import {
   Layers,
   HelpCircle,
   Sparkles,
+  PenTool,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
     { href: "/dashboard/flashcards", icon: Layers, label: "Flashcards" },
     { href: "/dashboard/quiz", icon: HelpCircle, label: "MCQ Quiz" },
     { href: "/dashboard/tools", icon: Sparkles, label: "Smart Tools" },
+    { href: "/dashboard/whiteboard", icon: PenTool, label: "Whiteboard" },
   ];
 
   const systemItems = [
