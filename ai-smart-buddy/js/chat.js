@@ -1,7 +1,3 @@
-/**
- * Chat Module - AI Chat Assistant
- */
-
 class ChatManager {
     constructor() {
         this.messages = [];
@@ -12,6 +8,8 @@ class ChatManager {
         this.container = document.getElementById('chatMessages');
         this.input = document.getElementById('chatInput');
         this.sendBtn = document.getElementById('sendBtn');
+
+        if (!this.container || !this.input || !this.sendBtn) return;
 
         this.sendBtn.addEventListener('click', () => this.send());
         this.input.addEventListener('keydown', (e) => {
@@ -27,7 +25,7 @@ class ChatManager {
         if (!text) return;
 
         if (!aiService.isConnected()) {
-            this.addMessage('assistant', 'API key is not configured.');
+            this.showError('API key is not configured. Please add your Groq API key.');
             return;
         }
 
@@ -72,26 +70,46 @@ If the student asks about tasks or deadlines, suggest they use the Smart Tools s
         this.messages.push({ role, content });
 
         const avatar = role === 'assistant' ? '🧠' : '👤';
-        const messageHtml = `
-            <div class="message ${role}">
-                <div class="message-avatar">${avatar}</div>
+        const copyBtn = role === 'assistant'
+            ? `<button class="message-copy-btn" onclick="chatManager.copyMessage(this)" data-text="${this.escapeAttr(content)}">Copy</button>`
+            : '';
+
+        const messageEl = document.createElement('div');
+        messageEl.className = `message ${role}`;
+        messageEl.innerHTML = `
+            <div class="message-avatar">${avatar}</div>
+            <div>
                 <div class="message-content">${this.formatMessage(content)}</div>
+                ${copyBtn}
             </div>`;
 
-        this.container.insertAdjacentHTML('beforeend', messageHtml);
+        this.container.appendChild(messageEl);
         this.container.scrollTop = this.container.scrollHeight;
+    }
+
+    copyMessage(btn) {
+        const text = btn.getAttribute('data-text');
+        navigator.clipboard.writeText(text).then(() => {
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = original; }, 1500);
+        }).catch(() => {
+            btn.textContent = 'Failed';
+            setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+        });
     }
 
     addTypingIndicator() {
         const id = 'typing-' + Date.now();
-        const html = `
-            <div class="message assistant" id="${id}">
-                <div class="message-avatar">🧠</div>
-                <div class="message-content">
-                    <span class="loading"></span> Thinking...
-                </div>
+        const el = document.createElement('div');
+        el.className = 'message assistant';
+        el.id = id;
+        el.innerHTML = `
+            <div class="message-avatar">🧠</div>
+            <div class="message-content">
+                <span class="loading"></span> Thinking...
             </div>`;
-        this.container.insertAdjacentHTML('beforeend', html);
+        this.container.appendChild(el);
         this.container.scrollTop = this.container.scrollHeight;
         return id;
     }
@@ -101,18 +119,62 @@ If the student asks about tasks or deadlines, suggest they use the Smart Tools s
         if (el) el.remove();
     }
 
+    showError(message) {
+        const existing = this.container.querySelector('.inline-error');
+        if (existing) existing.remove();
+
+        const el = document.createElement('div');
+        el.className = 'inline-error';
+        el.textContent = message;
+        this.container.appendChild(el);
+        this.container.scrollTop = this.container.scrollHeight;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    escapeAttr(text) {
+        return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
     formatMessage(text) {
-        return text
+        let escaped = text
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '<br>')
+            .replace(/>/g, '&gt;');
+
+        escaped = escaped
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/`(.*?)`/g, '<code>$1</code>')
-            .replace(/^- (.*)/gm, '<li>$1</li>')
-            .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-            .replace(/<\/ul>\s*<ul>/g, '');
+            .replace(/`(.*?)`/g, '<code>$1</code>');
+
+        const lines = escaped.split('\n');
+        let result = '';
+        let inList = false;
+
+        for (const line of lines) {
+            if (line.match(/^- /)) {
+                if (!inList) {
+                    result += '<ul>';
+                    inList = true;
+                }
+                result += `<li>${line.slice(2)}</li>`;
+            } else {
+                if (inList) {
+                    result += '</ul>';
+                    inList = false;
+                }
+                if (line.trim()) {
+                    result += `<p>${line}</p>`;
+                }
+            }
+        }
+
+        if (inList) result += '</ul>';
+        return result;
     }
 }
 

@@ -14,6 +14,9 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Settings,
+  Layers,
+  HelpCircle,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -36,12 +39,16 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
     { href: "/dashboard/tasks", icon: ListTodo, label: "Tasks" },
     { href: "/dashboard/notices", icon: Megaphone, label: "Notices" },
     { href: "/dashboard/attendance", icon: BarChart3, label: "Attendance" },
+    { href: "/dashboard/flashcards", icon: Layers, label: "Flashcards" },
+    { href: "/dashboard/quiz", icon: HelpCircle, label: "MCQ Quiz" },
+    { href: "/dashboard/tools", icon: Sparkles, label: "Smart Tools" },
   ];
 
   const systemItems = [
     { href: "/dashboard/automations", icon: Workflow, label: "Automations" },
     { href: "/dashboard/settings", icon: Settings, label: "Settings" },
   ];
+
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";

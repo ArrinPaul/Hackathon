@@ -1,95 +1,144 @@
-/**
- * App Controller - Main application logic
- */
-
 class App {
     constructor() {
         this.currentSection = 'chat';
-        this.sectionSlugs = {
-            chat: 'chat',
-            flashcards: 'flashcards',
-            quiz: 'quiz',
-            smart: 'smart-tools'
+        this.sectionPaths = {
+            chat: '/chat',
+            flashcards: '/flashcards',
+            quiz: '/quiz',
+            smart: '/tools'
         };
+        this.pathToSection = {};
+        Object.keys(this.sectionPaths).forEach(key => {
+            this.pathToSection[this.sectionPaths[key]] = key;
+        });
         this.init();
     }
 
     init() {
+        this.setupSidebar();
         this.setupNavigation();
+        this.setupMobileNav();
+        this.setupToolCards();
         this.setupRouting();
         this.updateApiStatus();
-        this.syncFromHash();
-        window.addEventListener('hashchange', () => this.syncFromHash());
+        setInterval(() => this.updateApiStatus(), 5000);
+    }
+
+    setupSidebar() {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+        }
     }
 
     setupNavigation() {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                const section = item.dataset.section;
-                this.navigateTo(section, true);
+                const path = item.getAttribute('data-path') || item.getAttribute('href');
+                this.navigateTo(path);
+            });
+        });
+    }
+
+    setupMobileNav() {
+        document.querySelectorAll('.mobile-nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const path = item.getAttribute('href');
+                this.navigateTo(path);
+            });
+        });
+    }
+
+    setupToolCards() {
+        document.querySelectorAll('.tool-card .btn-secondary[data-tool]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slug = btn.getAttribute('data-tool');
+                this.navigateTo('/tools/' + slug);
             });
         });
     }
 
     setupRouting() {
-        if (!window.location.hash) {
-            this.updateHash(this.currentSection);
+        window.addEventListener('popstate', () => this.syncFromPath());
+        this.syncFromPath(false);
+    }
+
+    syncFromPath(pushState = true) {
+        const pathname = window.location.pathname;
+        const cleanPath = pathname.split('?')[0].split('#')[0];
+
+        if (cleanPath.startsWith('/tools/')) {
+            const slug = cleanPath.replace('/tools/', '');
+            this.navigateTo('/tools/' + slug, false);
+            if (typeof smartFeatures !== 'undefined') {
+                smartFeatures.open(slug, true);
+            }
+            return;
+        }
+
+        const section = this.pathToSection[cleanPath] || 'chat';
+        this.setActiveSection(section, false);
+        if (typeof smartFeatures !== 'undefined') {
+            smartFeatures.closeModal();
         }
     }
 
-    syncFromHash() {
-        const hash = window.location.hash.replace(/^#/, '');
-        if (!hash) return;
+    navigateTo(path, pushState = true) {
+        const section = this.pathToSection[path] || 'chat';
 
-        const [sectionSlug, toolSlug] = hash.split('/');
-        const section = Object.keys(this.sectionSlugs).find(key => this.sectionSlugs[key] === sectionSlug);
-
-        if (section) {
-            this.navigateTo(section, false);
+        if (pushState) {
+            history.pushState({}, '', path);
         }
 
-        if (section === 'smart' && toolSlug && typeof openToolModal === 'function') {
-            openToolModal(toolSlug, true);
+        this.setActiveSection(section, false);
+        if (typeof smartFeatures !== 'undefined') {
+            smartFeatures.closeModal();
         }
     }
 
-    updateHash(section, toolSlug = null) {
-        const slug = this.sectionSlugs[section] || section;
-        const nextHash = toolSlug ? `#${slug}/${toolSlug}` : `#${slug}`;
+    setActiveSection(section, updateUrl = true) {
+        this.currentSection = section;
 
-        if (window.location.hash !== nextHash) {
-            history.replaceState(null, '', nextHash);
-        }
-    }
-
-    navigateTo(section, updateUrl = true) {
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
+            const itemSection = item.getAttribute('data-section');
+            item.classList.toggle('active', itemSection === section);
         });
+
+        document.querySelectorAll('.mobile-nav-item').forEach(item => {
+            const itemSection = item.getAttribute('data-section');
+            item.classList.toggle('active', itemSection === section);
+        });
+
         document.querySelectorAll('.content-section').forEach(sec => {
             sec.classList.remove('active');
         });
 
-        document.querySelector(`[data-section="${section}"]`).classList.add('active');
-        document.getElementById(`${section}Section`).classList.add('active');
-        this.currentSection = section;
+        const sectionEl = document.getElementById(section + 'Section');
+        if (sectionEl) {
+            sectionEl.classList.add('active');
+        }
 
         if (updateUrl) {
-            this.updateHash(section);
+            const path = this.sectionPaths[section] || '/chat';
+            history.pushState({}, '', path);
         }
     }
 
     updateApiStatus() {
         const statusEl = document.getElementById('apiStatus');
-        const statusText = statusEl.querySelector('.status-text');
-
-        if (aiService.isConnected()) {
+        if (!statusEl) return;
+        const textEl = statusEl.querySelector('.status-text');
+        if (typeof aiService !== 'undefined' && aiService.isConnected()) {
             statusEl.classList.add('connected');
-            statusText.textContent = 'API Connected';
+            if (textEl) textEl.textContent = 'API Connected';
         } else {
             statusEl.classList.remove('connected');
-            statusText.textContent = 'API Not Connected';
+            if (textEl) textEl.textContent = 'API Not Connected';
         }
     }
 }

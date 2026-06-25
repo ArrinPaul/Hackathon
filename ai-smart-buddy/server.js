@@ -1,9 +1,3 @@
-/**
- * Simple HTTP Server for AI Smart Buddy
- * Run: node server.js
- * Access: http://localhost:3000
- */
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -75,46 +69,96 @@ const mimeTypes = {
     '.jpg': 'image/jpeg',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf'
 };
 
+const appRoutes = [
+    '/',
+    '/chat',
+    '/flashcards',
+    '/quiz',
+    '/tools',
+    '/tools/summarize-notes',
+    '/tools/study-schedule',
+    '/tools/concept-map',
+    '/tools/explain-concept',
+    '/tools/attendance-risk',
+    '/tools/notice-summarizer'
+];
+
+function isAppRoute(urlPath) {
+    const cleanPath = urlPath.split('?')[0].split('#')[0];
+    return appRoutes.includes(cleanPath);
+}
+
 const server = http.createServer((req, res) => {
-    let filePath = req.url === '/' ? '/index.html' : req.url;
-    filePath = path.join(__dirname, filePath);
+    const urlPath = req.url.split('?')[0].split('#')[0];
 
-    const extname = path.extname(filePath).toLowerCase();
-    const contentType = mimeTypes[extname] || 'application/octet-stream';
-
-    fs.readFile(filePath, (error, content) => {
-        if (error) {
-            if (error.code === 'ENOENT') {
-                res.writeHead(404, { 'Content-Type': 'text/html' });
-                res.end('<h1>404 - File Not Found</h1>');
-            } else {
+    if (urlPath === '/') {
+        const indexPath = path.join(__dirname, 'index.html');
+        fs.readFile(indexPath, (error, content) => {
+            if (error) {
                 res.writeHead(500);
-                res.end(`Server Error: ${error.code}`);
-            }
-        } else {
-            res.writeHead(200, { 'Content-Type': contentType });
-
-            if (extname === '.html') {
-                res.end(injectClientConfig(content.toString('utf-8')));
+                res.end('Server Error');
                 return;
             }
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(injectClientConfig(content.toString('utf-8')));
+        });
+        return;
+    }
 
-            res.end(content, 'utf-8');
+    const filePath = path.join(__dirname, urlPath);
+    const extname = path.extname(filePath).toLowerCase();
+
+    if (extname && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const contentType = mimeTypes[extname] || 'application/octet-stream';
+        const content = fs.readFileSync(filePath);
+
+        if (extname === '.html') {
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(injectClientConfig(content.toString('utf-8')));
+        } else {
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(content);
         }
-    });
+        return;
+    }
+
+    if (isAppRoute(urlPath)) {
+        const indexPath = path.join(__dirname, 'index.html');
+        fs.readFile(indexPath, (error, content) => {
+            if (error) {
+                res.writeHead(500);
+                res.end('Server Error');
+                return;
+            }
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(injectClientConfig(content.toString('utf-8')));
+        });
+        return;
+    }
+
+    res.writeHead(404, { 'Content-Type': 'text/html' });
+    res.end('<h1>404 - Not Found</h1>');
 });
 
 server.listen(PORT, () => {
     console.log(`
-╔══════════════════════════════════════════════════╗
-║         AI Smart Buddy - CampusFlow              ║
-║                                                  ║
-║  Server running at: http://localhost:${PORT}       ║
-║                                                  ║
-║  Press Ctrl+C to stop                            ║
-╚══════════════════════════════════════════════════╝
+  AI Smart Buddy - CampusFlow
+
+  Server running at: http://localhost:${PORT}
+
+  Routes:
+    /chat              - AI Chat Assistant
+    /flashcards        - Flashcard Generator
+    /quiz              - MCQ Quiz Generator
+    /tools             - Smart Tools
+    /tools/:toolSlug   - Individual Smart Tool
+
+  Press Ctrl+C to stop
     `);
 });

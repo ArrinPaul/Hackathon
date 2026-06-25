@@ -1,7 +1,3 @@
-/**
- * Smart Features Module - AI-powered productivity tools
- */
-
 class SmartFeatures {
     constructor() {
         this.modal = document.getElementById('toolModal');
@@ -23,22 +19,30 @@ class SmartFeatures {
             'notice-summarizer': 'notice'
         };
 
+        if (!this.closeModalBtn) return;
+
         this.closeModalBtn.addEventListener('click', () => this.closeModal());
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) this.closeModal();
         });
         this.modalActionBtn.addEventListener('click', () => this.executeTool());
 
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                this.closeModal();
+            }
+        });
+
         this.tools = {
             summarize: {
                 slug: 'summarize-notes',
-                title: '📊 Summarize Notes',
+                title: 'Summarize Notes',
                 placeholder: 'Paste your lecture notes to get a concise summary...',
                 action: 'Summarize'
             },
             schedule: {
                 slug: 'study-schedule',
-                title: '📅 Study Schedule',
+                title: 'Study Schedule',
                 placeholder: 'Describe your exam schedule and available study hours...',
                 action: 'Generate Schedule',
                 options: [
@@ -48,25 +52,25 @@ class SmartFeatures {
             },
             diagram: {
                 slug: 'concept-map',
-                title: '🔗 Concept Map',
+                title: 'Concept Map',
                 placeholder: 'Paste content to convert into a concept diagram...',
                 action: 'Generate Diagram'
             },
             explain: {
                 slug: 'explain-concept',
-                title: '💡 Explain Concept',
+                title: 'Explain Concept',
                 placeholder: 'Enter the concept you want explained simply...',
                 action: 'Explain'
             },
             attendance: {
                 slug: 'attendance-risk',
-                title: '⚠️ Attendance Risk Check',
+                title: 'Attendance Risk Check',
                 placeholder: 'Enter subjects and attendance % (e.g., "Math: 75, Physics: 60, CS: 90")...',
                 action: 'Check Risk'
             },
             notice: {
                 slug: 'notice-summarizer',
-                title: '📋 Notice Summarizer',
+                title: 'Notice Summarizer',
                 placeholder: 'Paste the college notice here...',
                 action: 'Summarize Notice'
             }
@@ -81,59 +85,55 @@ class SmartFeatures {
         this.currentTool = this.resolveToolName(toolName);
         const tool = this.tools[this.currentTool];
 
-        if (!tool) {
-            alert('Unknown tool selected.');
-            return;
-        }
+        if (!tool) return;
 
         this.modalTitle.textContent = tool.title;
         this.modalInput.value = '';
         this.modalInput.placeholder = tool.placeholder;
         this.modalResult.innerHTML = '';
         this.modalActionBtn.textContent = tool.action;
+        this.modalActionBtn.disabled = false;
 
         this.modalOptions.innerHTML = '';
         if (tool.options) {
             tool.options.forEach(opt => {
-                this.modalOptions.innerHTML += `
-                    <div class="setting-item">
-                        <label for="${opt.id}">${opt.label}</label>
-                        <input type="${opt.type}" id="${opt.id}" value="${opt.value || ''}">
-                    </div>`;
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                group.innerHTML = `
+                    <label for="${opt.id}">${opt.label}</label>
+                    <input type="${opt.type}" id="${opt.id}" value="${opt.value || ''}">`;
+                this.modalOptions.appendChild(group);
             });
         }
 
         this.modal.classList.add('active');
 
-        if (!fromRoute && typeof app !== 'undefined' && app.updateHash) {
-            app.updateHash('smart', tool.slug);
+        if (!fromRoute && typeof app !== 'undefined') {
+            history.pushState({}, '', '/tools/' + tool.slug);
         }
     }
 
     closeModal() {
         this.modal.classList.remove('active');
         this.currentTool = null;
+        if (typeof app !== 'undefined') {
+            history.pushState({}, '', '/tools');
+        }
     }
 
     async executeTool() {
         const content = this.modalInput.value.trim();
         const tool = this.tools[this.currentTool];
 
-        if (!tool) {
-            alert('No tool is currently selected.');
-            return;
-        }
-
-        const scheduleExamDate = document.getElementById('examDate')?.value || 'next week';
-        const scheduleStudyHours = document.getElementById('studyHours')?.value || 4;
+        if (!tool) return;
 
         if (!content && this.currentTool !== 'schedule') {
-            alert('Please enter some content first!');
+            this.showResultError('Please enter some content first!');
             return;
         }
 
         if (!aiService.isConnected()) {
-            alert('API key is not configured.');
+            this.showResultError('API key is not configured.');
             return;
         }
 
@@ -150,16 +150,19 @@ class SmartFeatures {
                 userPrompt = `Summarize these notes:\n\n${content}`;
                 break;
 
-            case 'schedule':
+            case 'schedule': {
+                const examDate = document.getElementById('examDate')?.value || 'next week';
+                const studyHours = document.getElementById('studyHours')?.value || 4;
                 systemPrompt = `You are a study schedule planner. Create a detailed daily study plan.
-Available study hours per day: ${scheduleStudyHours}.
-Exam date: ${scheduleExamDate}.
+Available study hours per day: ${studyHours}.
+Exam date: ${examDate}.
 Include subjects, topics, break times, and revision slots.
 Format as a clear daily schedule.`;
                 userPrompt = content
                     ? `Create a study schedule for these subjects/topics:\n\n${content}`
                     : 'Create a study schedule using the provided exam date and daily study hours.';
                 break;
+            }
 
             case 'diagram':
                 systemPrompt = `You are a concept mapper. Convert the given content into a structured concept map.
@@ -206,20 +209,69 @@ Format as clear bullet points.`;
         try {
             const result = await aiService.generate(systemPrompt, userPrompt);
             this.modalResult.innerHTML = this.formatResult(result);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'result-copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(result).then(() => {
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            this.modalResult.appendChild(copyBtn);
         } catch (error) {
-            this.modalResult.innerHTML = `<p style="color: #ff4444;">Error: ${error.message}</p>`;
+            this.showResultError('Error: ' + error.message);
         } finally {
             this.modalActionBtn.disabled = false;
             this.modalActionBtn.textContent = tool.action;
         }
     }
 
+    showResultError(message) {
+        this.modalResult.innerHTML = '';
+        const el = document.createElement('div');
+        el.className = 'inline-error';
+        el.textContent = message;
+        this.modalResult.appendChild(el);
+    }
+
     formatResult(text) {
-        return text
-            .replace(/\n/g, '<br>')
+        let escaped = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        escaped = escaped
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/`(.*?)`/g, '<code style="background:#f0f0f0;padding:2px 4px;border-radius:3px;">$1</code>');
+            .replace(/`(.*?)`/g, '<code>$1</code>');
+
+        const lines = escaped.split('\n');
+        let result = '';
+        let inList = false;
+
+        for (const line of lines) {
+            if (line.match(/^- /) || line.match(/^\d+\. /)) {
+                if (!inList) {
+                    const isOrdered = line.match(/^\d+\. /);
+                    result += isOrdered ? '<ol>' : '<ul>';
+                    inList = isOrdered ? 'ol' : 'ul';
+                }
+                result += `<li>${line.replace(/^[-\d.]+ /, '')}</li>`;
+            } else {
+                if (inList) {
+                    result += `</${inList}>`;
+                    inList = false;
+                }
+                if (line.trim()) {
+                    result += `<p>${line}</p>`;
+                }
+            }
+        }
+
+        if (inList) result += `</${inList}>`;
+        return result;
     }
 }
 

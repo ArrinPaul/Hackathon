@@ -1,7 +1,3 @@
-/**
- * Flashcard Module - Generate flashcards from notes using AI
- */
-
 class FlashcardManager {
     constructor() {
         this.flashcards = [];
@@ -20,6 +16,11 @@ class FlashcardManager {
         this.nextBtn = document.getElementById('nextCardBtn');
         this.flipBtn = document.getElementById('flipCardBtn');
         this.notesInput = document.getElementById('notesInput');
+        this.progress = document.getElementById('flashcardProgress');
+        this.progressFill = document.getElementById('flashcardProgressFill');
+        this.hintText = document.getElementById('flashcardHintText');
+
+        if (!this.generateBtn) return;
 
         this.generateBtn.addEventListener('click', () => this.generate());
         this.clearBtn.addEventListener('click', () => this.clear());
@@ -30,17 +31,31 @@ class FlashcardManager {
         if (this.stack) {
             this.stack.addEventListener('click', () => this.flip());
         }
+
+        document.addEventListener('keydown', (e) => {
+            const section = document.getElementById('flashcardsSection');
+            if (!section || !section.classList.contains('active')) return;
+
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                this.flip();
+            } else if (e.key === 'ArrowLeft') {
+                this.prev();
+            } else if (e.key === 'ArrowRight') {
+                this.next();
+            }
+        });
     }
 
     async generate() {
         const notes = this.notesInput.value.trim();
         if (!notes) {
-            alert('Please paste some notes first!');
+            this.showError('Please paste some notes first!');
             return;
         }
 
         if (!aiService.isConnected()) {
-            alert('API key is not configured.');
+            this.showError('API key is not configured.');
             return;
         }
 
@@ -50,26 +65,46 @@ class FlashcardManager {
         const systemPrompt = `You are a flashcard generator for students. Convert the given notes into flashcards.
 Return ONLY a JSON array of objects with "front" (question/concept) and "back" (answer/explanation).
 Create 8-12 flashcards covering the key concepts.
+Do not include any text outside the JSON array.
 Format: [{"front": "question", "back": "answer"}, ...]`;
 
         try {
             const result = await aiService.generate(systemPrompt, `Create flashcards from these notes:\n\n${notes}`);
-            const jsonMatch = result.match(/\[[\s\S]*\]/);
+            const parsed = this.extractJsonArray(result);
 
-            if (jsonMatch) {
-                this.flashcards = JSON.parse(jsonMatch[0]);
+            if (parsed && Array.isArray(parsed)) {
+                this.flashcards = parsed.filter(c => c.front && c.back);
+                if (this.flashcards.length === 0) {
+                    throw new Error('No valid flashcards found in response');
+                }
                 this.currentIndex = 0;
                 this.isFlipped = false;
                 this.render();
             } else {
-                throw new Error('Invalid response format');
+                throw new Error('Could not parse flashcards from AI response');
             }
         } catch (error) {
-            alert('Error generating flashcards: ' + error.message);
+            this.showError('Error: ' + error.message);
         } finally {
             this.generateBtn.disabled = false;
             this.generateBtn.innerHTML = 'Generate Flashcards';
         }
+    }
+
+    extractJsonArray(text) {
+        try {
+            return JSON.parse(text);
+        } catch (e) {}
+
+        const start = text.indexOf('[');
+        const end = text.lastIndexOf(']');
+        if (start !== -1 && end > start) {
+            try {
+                return JSON.parse(text.slice(start, end + 1));
+            } catch (e) {}
+        }
+
+        return null;
     }
 
     render() {
@@ -79,27 +114,38 @@ Format: [{"front": "question", "back": "answer"}, ...]`;
                     <span class="empty-icon">🎴</span>
                     <p>No flashcards yet. Paste notes and click "Generate Flashcards"</p>
                 </div>`;
-            this.nav.style.display = 'none';
+            if (this.nav) this.nav.style.display = 'none';
+            if (this.progress) this.progress.style.display = 'none';
+            if (this.hintText) this.hintText.style.display = 'none';
             return;
         }
 
         const card = this.flashcards[this.currentIndex];
+        const front = this.escapeHtml(card.front);
+        const back = this.escapeHtml(card.back);
+
         this.stack.innerHTML = `
             <div class="flashcard ${this.isFlipped ? 'flipped' : ''}">
                 <div class="flashcard-front">
                     <div class="flashcard-label">Question</div>
-                    <div class="flashcard-text">${card.front}</div>
+                    <div class="flashcard-text">${front}</div>
                     <div class="flashcard-hint">Click to flip</div>
                 </div>
                 <div class="flashcard-back">
                     <div class="flashcard-label">Answer</div>
-                    <div class="flashcard-text">${card.back}</div>
+                    <div class="flashcard-text">${back}</div>
                     <div class="flashcard-hint">Click to flip back</div>
                 </div>
             </div>`;
 
-        this.nav.style.display = 'flex';
-        this.counter.textContent = `${this.currentIndex + 1} / ${this.flashcards.length}`;
+        if (this.nav) this.nav.style.display = 'flex';
+        if (this.counter) this.counter.textContent = `${this.currentIndex + 1} / ${this.flashcards.length}`;
+        if (this.progress) this.progress.style.display = 'block';
+        if (this.progressFill) {
+            const pct = ((this.currentIndex + 1) / this.flashcards.length) * 100;
+            this.progressFill.style.width = pct + '%';
+        }
+        if (this.hintText) this.hintText.style.display = 'block';
     }
 
     flip() {
@@ -130,8 +176,28 @@ Format: [{"front": "question", "back": "answer"}, ...]`;
         this.flashcards = [];
         this.currentIndex = 0;
         this.isFlipped = false;
-        this.notesInput.value = '';
+        if (this.notesInput) this.notesInput.value = '';
         this.render();
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    showError(message) {
+        const existing = document.querySelector('#flashcardsSection .inline-error');
+        if (existing) existing.remove();
+
+        const section = document.getElementById('flashcardsSection');
+        if (!section) return;
+
+        const el = document.createElement('div');
+        el.className = 'inline-error';
+        el.textContent = message;
+        section.querySelector('.flashcard-controls').appendChild(el);
+        setTimeout(() => el.remove(), 5000);
     }
 }
 

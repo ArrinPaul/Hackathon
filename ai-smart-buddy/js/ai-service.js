@@ -79,6 +79,9 @@ class AIService {
             }
 
             const data = await response.json();
+            if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                throw new Error('Invalid response from AI. Please try again.');
+            }
             return data.choices[0].message.content;
         } catch (error) {
             if (error.message.includes('Failed to fetch')) {
@@ -114,6 +117,9 @@ class AIService {
             }
 
             const data = await response.json();
+            if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                throw new Error('Invalid response from AI. Please try again.');
+            }
             return data.choices[0].message.content;
         } catch (error) {
             if (error.message.includes('Failed to fetch')) {
