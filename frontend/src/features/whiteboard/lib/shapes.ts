@@ -20,7 +20,7 @@ export interface Shape {
   points?: { x: number; y: number }[]; // For pen strokes
   imageData?: string; // Base64 or URL data for image insertion
   groupId?: string | null; // For shape grouping
-  layerIndex?: number; // Order index for layers
+  layerId?: string; // Unique layer ID reference
 }
 
 export interface Viewport {
@@ -72,7 +72,7 @@ export function createShape(type: ShapeType, overrides: Partial<Shape> = {}): Sh
     startShapeId: null,
     endShapeId: null,
     groupId: null,
-    layerIndex: 0,
+    layerId: 'default',
     ...overrides,
   };
 }

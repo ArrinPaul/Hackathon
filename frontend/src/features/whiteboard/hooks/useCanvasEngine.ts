@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Shape, Viewport, ToolId, createShape, genId } from '../lib/shapes';
 import {
   screenToWorld, hitTestShape, hitTestHandle, resizeShape,
-  drawGrid, drawShape, drawArrow, drawSelectionHandles, worldToScreenShape, worldToScreen
+  drawGrid, drawShape, drawArrow, drawSelectionHandles, worldToScreenShape
 } from '../lib/canvas-utils';
 
 interface DragOffset {
@@ -168,18 +168,9 @@ export function useCanvasEngine() {
       
       // Delete shapes on that layer
       setShapes(shapesPrev => {
-        const updatedShapes = shapesPrev.filter(s => (s.layerIndex !== undefined ? s.layerIndex.toString() : s.groupId) !== id && (s.groupId !== id)); // simple check
-        pushHistory(shapesPrev.filter(s => (s.layerIndex !== undefined && s.layerIndex.toString() === id ? false : (s.groupId !== id)))); // actual cleanup
-        return shapesPrev.filter(s => {
-          const lId = s.layerIndex !== undefined ? s.layerIndex.toString() : 'default'; // Let's use custom property layerIndex or standard shape.layerId
-          // Wait, in shapes.ts we added layerIndex. We can use layerIndex or shape.groupId. Let's make sure we check shape.layerIndex or shape.groupId.
-          // Let's use `s.groupId` or if we store layerId as shape.layerIndex (acting as index) or custom property.
-          // Wait, let's treat shape.groupId or shape.layerIndex as layer index. Better yet, let's add `layerId` (custom property) to shapes!
-          // Ah, in shapes.ts we added `layerIndex?: number`.
-          // If we use layerIndex as index in layers array, or we store the actual layer index.
-          // Let's map shape.layerIndex to index in layers array.
-          return true;
-        });
+        const updated = shapesPrev.filter(s => (s.layerId || 'default') !== id);
+        pushHistory(updated);
+        return updated;
       });
 
       if (activeLayerId === id) {
@@ -187,7 +178,7 @@ export function useCanvasEngine() {
       }
       return updatedLayers;
     });
-  }, [activeLayerId]);
+  }, [activeLayerId, pushHistory]);
 
   const toggleLayerVisibility = useCallback((id: string) => {
     setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l));
@@ -222,16 +213,13 @@ export function useCanvasEngine() {
     const cy = canvas ? canvas.height / 2 : 300;
     const wp = screenToWorld(cx, cy, viewportRef.current);
     
-    // Find active layer index
-    const actIdx = layersRef.current.findIndex(l => l.id === activeLayerId);
-    
     const imgShape = createShape('image', {
       x: wp.x - 100,
       y: wp.y - 75,
       width: 200,
       height: 150,
       imageData: base64Data,
-      layerIndex: actIdx >= 0 ? actIdx : 0
+      layerId: activeLayerId
     });
     addShapes([imgShape]);
     setSelectedIds([imgShape.id]);
@@ -294,20 +282,20 @@ export function useCanvasEngine() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawGrid(ctx, v, canvas.width, canvas.height);
 
-    // Build map of layer visibility
-    const visibleLayerIndices = new Set<number>();
-    ls.forEach((l, idx) => {
-      if (l.visible) visibleLayerIndices.add(idx);
-    });
+    // Map layer order indexes
+    const layerIndices = ls.reduce((acc, l, idx) => {
+      acc[l.id] = idx;
+      return acc;
+    }, {} as Record<string, number>);
 
-    // Filter and sort shapes by layerIndex.
-    // If shape.layerIndex is undefined, assume 0.
+    // Filter shapes based on visible layers
+    const visibleLayerIds = new Set(ls.filter(l => l.visible).map(l => l.id));
+
     const shapesToRender = s.filter(shape => {
-      const idx = shape.layerIndex !== undefined ? shape.layerIndex : 0;
-      return visibleLayerIndices.has(idx);
+      return visibleLayerIds.has(shape.layerId || 'default');
     }).sort((a, b) => {
-      const idxA = a.layerIndex !== undefined ? a.layerIndex : 0;
-      const idxB = b.layerIndex !== undefined ? b.layerIndex : 0;
+      const idxA = layerIndices[a.layerId || 'default'] ?? 0;
+      const idxB = layerIndices[b.layerId || 'default'] ?? 0;
       return idxA - idxB;
     });
 
@@ -323,9 +311,7 @@ export function useCanvasEngine() {
     for (const selId of selectedIds) {
       const sel = s.find(sh => sh.id === selId);
       if (sel && sel.type !== 'arrow' && sel.type !== 'line') {
-        // Skip selection handles for shapes on locked layers
-        const shapeLayerIdx = sel.layerIndex !== undefined ? sel.layerIndex : 0;
-        const layer = ls[shapeLayerIdx];
+        const layer = ls.find(l => l.id === (sel.layerId || 'default'));
         if (!layer?.locked) {
           drawSelectionHandles(ctx, sel, v);
         }
@@ -389,8 +375,7 @@ export function useCanvasEngine() {
       return;
     }
 
-    const currentActiveLayerIdx = layersRef.current.findIndex(l => l.id === activeLayerId);
-    const activeLayer = layersRef.current[currentActiveLayerIdx];
+    const activeLayer = layersRef.current.find(l => l.id === activeLayerId);
     if (activeLayer?.locked && tool !== 'select') {
       alert('Active layer is locked! Unlock it or select another layer to draw.');
       return;
@@ -400,8 +385,7 @@ export function useCanvasEngine() {
       const hit = hitTestShape(wp.x, wp.y, shapesRef.current);
       if (hit) {
         // If the shape's layer is locked, do not allow interactions
-        const shapeLayerIdx = hit.layerIndex !== undefined ? hit.layerIndex : 0;
-        const layer = layersRef.current[shapeLayerIdx];
+        const layer = layersRef.current.find(l => l.id === (hit.layerId || 'default'));
         if (layer?.locked) {
           if (!e.shiftKey) setSelectedIds([]);
           return;
@@ -457,7 +441,7 @@ export function useCanvasEngine() {
         width: 1, height: 1,
         stroke: strokeColor, strokeWidth,
         points: [{ x: 0, y: 0 }],
-        layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+        layerId: activeLayerId
       });
       dragRef.current = { mode: 'pen', startX: wp.x, startY: wp.y, tempShape: temp };
       return;
@@ -468,7 +452,7 @@ export function useCanvasEngine() {
       if (hit && hit.type !== 'arrow' && hit.type !== 'line') {
         const temp = createShape('arrow', {
           startShapeId: hit.id, stroke: strokeColor, strokeWidth,
-          layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+          layerId: activeLayerId
         });
         dragRef.current = { mode: 'arrow', startX: wp.x, startY: wp.y, tempShape: temp };
       }
@@ -479,7 +463,7 @@ export function useCanvasEngine() {
       const shape = createShape('text', {
         x: wp.x - 100, y: wp.y - 20, text: 'Text',
         fill: strokeColor, stroke: 'transparent', fontSize,
-        layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+        layerId: activeLayerId
       });
       addShapes([shape]);
       setSelectedIds([shape.id]);
@@ -493,7 +477,7 @@ export function useCanvasEngine() {
     if (tool === 'sticky') {
       const shape = createShape('sticky', {
         x: wp.x - 80, y: wp.y - 80, text: 'Note',
-        layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+        layerId: activeLayerId
       });
       addShapes([shape]);
       setSelectedIds([shape.id]);
@@ -531,7 +515,7 @@ export function useCanvasEngine() {
     const temp = createShape(typeMap[tool] || 'rect', {
       x: wp.x, y: wp.y, width: 0, height: 0,
       fill: fillColor, stroke: strokeColor, strokeWidth, fontSize,
-      layerIndex: currentActiveLayerIdx >= 0 ? currentActiveLayerIdx : 0
+      layerId: activeLayerId
     });
     dragRef.current = { mode: 'create', startX: wp.x, startY: wp.y, tempShape: temp };
   }, [tool, fillColor, strokeColor, strokeWidth, fontSize, addShapes, selectedIds, activeLayerId, insertImage]);
@@ -697,8 +681,7 @@ export function useCanvasEngine() {
     const hit = hitTestShape(wp.x, wp.y, shapesRef.current);
     if (hit && hit.type !== 'pen' && hit.type !== 'image') {
       // Check if shape's layer is locked
-      const shapeLayerIdx = hit.layerIndex !== undefined ? hit.layerIndex : 0;
-      const layer = layersRef.current[shapeLayerIdx];
+      const layer = layersRef.current.find(l => l.id === (hit.layerId || 'default'));
       if (layer?.locked) return;
 
       // Inline editing trigger
